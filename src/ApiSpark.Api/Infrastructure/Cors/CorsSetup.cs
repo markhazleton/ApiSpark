@@ -1,0 +1,25 @@
+namespace ApiSpark.Api.Infrastructure.Cors;
+
+public static class CorsSetup
+{
+    public const string PolicyName = "ApiSparkPolicy";
+
+    public static IServiceCollection AddApiSparkCors(this IServiceCollection services, IConfiguration configuration)
+    {
+        var origins = configuration.GetSection("AllowedOrigins").Get<string[]>() ?? [];
+
+        services.AddCors(options =>
+        {
+            options.AddPolicy(PolicyName, policy =>
+            {
+                if (origins.Length > 0)
+                    policy.WithOrigins(origins).AllowAnyHeader().AllowAnyMethod();
+                else
+                    policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
+                          .AllowAnyHeader().AllowAnyMethod();
+            });
+        });
+
+        return services;
+    }
+}
