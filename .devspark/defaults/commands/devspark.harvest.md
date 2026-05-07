@@ -1,4 +1,4 @@
----
+﻿---
 description: Canonical knowledge-preserving cleanup workflow for completed specs, stale docs, comment cleanup, and archival
 handoffs:
   - label: Review Release Artifacts
@@ -276,4 +276,3 @@ Do not:
 5. Leave stale spec references in code comments when they can be safely rewritten
 6. Skip the user confirmation checkpoint
 7. Treat stale or deprecated references as living documentation
-

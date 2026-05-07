@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 #requires -Version 7.0
 <#
 .SYNOPSIS
@@ -141,4 +141,3 @@ if ($Json) {
     Write-Output "  Quickfix records:     $($result.CANDIDATE_COUNTS.quickfix_records)"
     Write-Output "  PR reviews:           $($result.CANDIDATE_COUNTS.pr_reviews)"
 }
-

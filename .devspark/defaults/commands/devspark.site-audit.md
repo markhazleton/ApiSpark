@@ -1,4 +1,4 @@
-````markdown
+﻿````markdown
 ---
 description: Perform comprehensive codebase audit against project constitution/standards, producing structured compliance report
 handoffs:
@@ -763,4 +763,3 @@ When previous audits exist:
 
 $ARGUMENTS
 ````
-

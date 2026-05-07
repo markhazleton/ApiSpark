@@ -1,4 +1,4 @@
----
+﻿---
 description: Convert existing tasks into actionable, dependency-ordered GitHub issues for the feature based on available design artifacts.
 tools: ['github/github-mcp-server/issue_write']
 scripts:
@@ -33,4 +33,3 @@ git config --get remote.origin.url
 
 > [!CAUTION]
 > UNDER NO CIRCUMSTANCES EVER CREATE ISSUES IN REPOSITORIES THAT DO NOT MATCH THE REMOTE URL
-

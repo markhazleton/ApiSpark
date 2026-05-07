@@ -1,4 +1,4 @@
----
+﻿---
 description: Generate a custom checklist for the current feature based on user requirements.
 handoffs:
   - label: Implement Project
@@ -320,4 +320,3 @@ Sample items:
 - Correct: Validation of requirement quality
 - Wrong: "Does it do X?"
 - Correct: "Is X clearly specified?"
-

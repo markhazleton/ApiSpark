@@ -1,4 +1,4 @@
----
+﻿---
 description: Create or update the feature specification from a natural language feature description.
 handoffs:
   - label: Build Technical Plan
@@ -300,4 +300,3 @@ Success criteria must be:
 - "Database can handle 1000 TPS" (implementation detail, use user-facing metric)
 - "React components render efficiently" (framework-specific)
 - "Redis cache hit rate above 80%" (technology-specific)
-

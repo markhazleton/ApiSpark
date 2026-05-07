@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 # Quickfix context gathering script
 # Supports rapid bug fixes and small features without full spec overhead
 
@@ -144,4 +144,3 @@ else {
         Write-Output "Max Effort: $maxEffort"
     }
 }
-

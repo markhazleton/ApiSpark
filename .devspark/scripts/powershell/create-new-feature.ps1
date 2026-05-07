@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 # Create a new feature
 [CmdletBinding()]
 param(
@@ -285,5 +285,4 @@ if ($Json) {
     Write-Output "HAS_GIT: $hasGit"
     Write-Output "DEVSPARK_FEATURE environment variable set to: $branchName"
 }
-
 

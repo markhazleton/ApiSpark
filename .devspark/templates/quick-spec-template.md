@@ -1,4 +1,4 @@
----
+﻿---
 classification: quick-spec
 risk_level: medium
 target_workflow: specify-light
@@ -38,4 +38,3 @@ required_gates: checklist
 
 - [How the change will be verified]
 - [Relevant quality gate or checklist expectations]
-

@@ -1,4 +1,4 @@
----
+﻿---
 description: Rapid lightweight fix workflow that bypasses full spec creation while maintaining constitution compliance validation
 handoffs:
   - label: View Quickfix History
@@ -376,4 +376,3 @@ Resets annually. Example: QF-2026-001, QF-2026-002
 ## Context
 
 $ARGUMENTS
-

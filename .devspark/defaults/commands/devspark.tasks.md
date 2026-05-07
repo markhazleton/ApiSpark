@@ -1,4 +1,4 @@
----
+﻿---
 description: Generate an actionable, dependency-ordered tasks.md for the feature based on available design artifacts.
 handoffs:
   - label: Analyze For Consistency
@@ -154,4 +154,3 @@ Every task MUST strictly follow this format:
   - Within each story: Tests (if requested) → Models → Services → Endpoints → Integration
   - Each phase should be a complete, independently testable increment
 - **Final Phase**: Polish & Cross-Cutting Concerns
-

@@ -1,4 +1,4 @@
----
+﻿---
 description: Deprecated compatibility alias for /devspark.harvest
 handoffs:
   - label: Review Release Artifacts
@@ -202,4 +202,3 @@ Brief description of what remains and why it is all current.
 - Preserve directory structure inside `.archive/YYYY-MM-DD/` to maintain traceability.
 - One archive folder per run, named by today's date.
 - If `$ARGUMENTS` names specific files, archive those directly without requiring full review of all candidates.
-

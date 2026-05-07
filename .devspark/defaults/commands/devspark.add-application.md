@@ -1,4 +1,4 @@
----
+﻿---
 description: Register a new application in the multi-app repository registry with guided metadata collection and automatic scaffolding.
 ---
 
@@ -55,4 +55,3 @@ Register a new application in the DevSpark multi-app registry at `.documentation
 - If the registry file does not exist, create it with `version: 1`, `mode: "multi-app"`, empty `profiles`, and the new app as the first entry
 - If the `id` already exists, fail with a clear duplicate error and do not modify the registry
 - The command MUST NOT modify `.devspark/` (ownership boundary)
-

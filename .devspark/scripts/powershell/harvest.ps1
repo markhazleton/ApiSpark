@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 <#
 .SYNOPSIS
     Pre-scan repository for harvest targets: completed specs, stale docs, spec-linked code comments.
@@ -635,4 +635,3 @@ if ($OutFile) {
 }
 
 $jsonOutput
-

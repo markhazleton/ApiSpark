@@ -1,4 +1,4 @@
----
+﻿---
 description: Draft or update a spec-aware pull request with task, checklist, and gate visibility before review.
 handoffs:
   - label: Review Pull Request
@@ -132,4 +132,3 @@ After creation or update, report:
 - If task or checklist artifacts are missing, report that plainly and continue with a lighter draft.
 - If gate artifacts are absent, recommend `/devspark.analyze` or `/devspark.critic` before merge.
 - Surface gate acknowledgements plainly in the draft body rather than burying them in prose.
-

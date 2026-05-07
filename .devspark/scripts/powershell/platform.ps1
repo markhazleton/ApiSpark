@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 # Platform detection and adapter for DevSpark scripts
 # Detects GitHub, Azure DevOps, or GitLab and exports platform-specific values.
 #
@@ -144,4 +144,3 @@ function Resolve-DevSparkScript {
 
     return $null
 }
-

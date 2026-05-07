@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 #requires -Version 7.0
 <#
 .SYNOPSIS
@@ -696,4 +696,3 @@ if ($OutputFormat -eq 'json') {
         Write-Output "  TODO/FIXME comments: $($result.patterns.quality.todo_comments_total)"
     }
 }
-

@@ -1,4 +1,4 @@
----
+﻿---
 description: Update an existing pull request description with current branch delta, preserving linked work items and metadata
 handoffs:
   - label: Review Updated PR
@@ -185,4 +185,3 @@ The PR checklist must reflect current constitution principles. Pre-check items w
 ## Context
 
 $ARGUMENTS
-

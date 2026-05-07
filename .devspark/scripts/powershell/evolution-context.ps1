@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 # Constitution evolution context gathering script
 # Analyzes PR reviews and audits to propose constitution amendments
 
@@ -169,4 +169,3 @@ else {
     Write-Output "Action: $action"
     Write-Output "Next Proposal ID: $nextCapId"
 }
-

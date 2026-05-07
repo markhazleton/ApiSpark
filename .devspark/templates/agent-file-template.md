@@ -1,4 +1,4 @@
-# [PROJECT NAME] Development Guidelines
+﻿# [PROJECT NAME] Development Guidelines
 
 Auto-generated from all feature plans. Last updated: [DATE]
 
@@ -26,4 +26,3 @@ Auto-generated from all feature plans. Last updated: [DATE]
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
-

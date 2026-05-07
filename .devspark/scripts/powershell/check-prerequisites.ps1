@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 
 # Consolidated prerequisite checking script (PowerShell)
 #
@@ -177,4 +177,3 @@ if ($Json) {
         Test-FileExists -Path $paths.TASKS -Description 'tasks.md' | Out-Null
     }
 }
-

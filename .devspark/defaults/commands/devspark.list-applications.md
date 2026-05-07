@@ -1,4 +1,4 @@
----
+﻿---
 description: Display all registered applications in the multi-app repository with metadata, dependencies, and documentation roots.
 ---
 
@@ -38,4 +38,3 @@ Read and display the DevSpark multi-app registry. This is a **read-only** comman
 
 - This command is read-only — no files may be created or modified
 - If no registry exists, say so and exit cleanly
-

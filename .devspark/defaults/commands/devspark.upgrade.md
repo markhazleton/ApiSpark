@@ -1,4 +1,4 @@
----
+﻿---
 description: Check the installed DevSpark version, identify stale framework files, and guide a safe upgrade to the latest release
 ---
 
@@ -388,4 +388,3 @@ No backup is needed because the upgrade process does not touch it.
 ## Context
 
 $ARGUMENTS
-

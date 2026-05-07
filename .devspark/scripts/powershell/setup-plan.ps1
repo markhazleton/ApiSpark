@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 # Setup implementation plan for a feature
 
 [CmdletBinding()]
@@ -64,4 +64,3 @@ if ($Json) {
     Write-Output "BRANCH: $($paths.CURRENT_BRANCH)"
     Write-Output "HAS_GIT: $($paths.HAS_GIT)"
 }
-

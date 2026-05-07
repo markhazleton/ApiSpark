@@ -1,4 +1,4 @@
----
+﻿---
 description: Execute the implementation plan by processing and executing all tasks defined in tasks.md
 handoffs:
   - label: Create Pull Request
@@ -176,4 +176,3 @@ You **MUST** consider the user input before proceeding (if not empty).
       3. Do NOT mark spec as `Complete`
 
 Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `/devspark.tasks` first to regenerate the task list.
-

@@ -1,4 +1,4 @@
----
+﻿---
 description: Address open PR review findings with enforced commit isolation between code fixes and review-file updates
 handoffs:
   - label: Re-Review Updated PR
@@ -172,4 +172,3 @@ findings:
 ```
 
 inding_id MUST be stable across re-runs when the underlying issue is unchanged. xecution_mode MUST be one of: `auto` (safe to apply automatically), `selective` (apply with reviewer approval), `manual` (requires human implementation). The `status` and `outcome` fields are written by `/devspark.address-pr-review` (FR-028).
-

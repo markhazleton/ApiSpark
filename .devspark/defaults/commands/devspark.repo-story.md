@@ -1,4 +1,4 @@
----
+﻿---
 description: Analyze full repository commit history and produce a compelling narrative for both business and technical audiences
 handoffs:
   - label: View Past Stories
@@ -310,4 +310,3 @@ After saving, present:
    - Strongest signal (e.g., "Consistent monthly delivery cadence")
    - Biggest risk (e.g., "Single-contributor bus factor")
    - Recommended next step (e.g., "Run `/devspark.site-audit` for code quality deep-dive")
-
