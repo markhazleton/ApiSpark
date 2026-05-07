@@ -1,9 +1,9 @@
 ---
 gate: critic
-status: warn
+status: pass
 blocking: false
-severity: error
-summary: "2 showstoppers, 3 critical, 4 high risks identified. Showstoppers must be resolved before implementation begins: (1) admin route challenge will throw 500 not 401 without an auth scheme registered, (2) WebApplicationFactory cannot access top-level Program class without explicit partial class declaration. Constitution is fully aligned — no showstoppers from that source."
+severity: warning
+summary: "9 risks identified; all 9 resolved in tasks.md and research.md (2026-05-07). Both showstoppers fixed: auth scheme (T010) and partial class (T017). All critical and high risks addressed. Ready for implementation."
 ---
 
 # Technical Risk Assessment: ApiSpark Platform Foundation
@@ -139,72 +139,72 @@ findings:
     description: "RequireAuthorization with no registered authentication scheme throws InvalidOperationException on challenge, returning HTTP 500 not 401. Breaks US3 acceptance criteria and constitution Principle VIII at runtime."
     recommended_action: "Add auth scheme registration before T010: builder.Services.AddAuthentication().AddBearerToken() (or a stub EmptyAuthHandler) so challenge pipeline has a handler that returns 401."
     execution_mode: auto
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "Resolved 2026-05-07 — see tasks.md Gate Acknowledgements table for task-level resolution details."
 
   - finding_id: critic-SS2
     severity: critical
     description: "Top-level Program.cs generates an internal class inaccessible from the test project. WebApplicationFactory<Program> fails to compile (CS0122) in all 8 test phases."
     recommended_action: "Add 'public partial class Program { }' as the last line of src/ApiSpark.Api/Program.cs. Include this in T017 task description explicitly."
     execution_mode: auto
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "Resolved 2026-05-07 — see tasks.md Gate Acknowledgements table for task-level resolution details."
 
   - finding_id: critic-CR1
     severity: high
     description: "db.Database.Migrate() is synchronous. In an async ASP.NET Core host, this blocks a thread pool thread and cannot honor startup CancellationToken. On Azure App Service, a slow migration risks hitting the platform startup timeout."
     recommended_action: "Change T016 to use await db.Database.MigrateAsync(cancellationToken) inside an async startup callback. Pass app.Lifetime.ApplicationStopping as the cancellation token."
     execution_mode: auto
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "Resolved 2026-05-07 — see tasks.md Gate Acknowledgements table for task-level resolution details."
 
   - finding_id: critic-CR2
     severity: high
     description: "SQLite connection string lacks 'Journal Mode=WAL'. Default DELETE journal mode takes exclusive write locks, causing 'database is locked' errors under concurrent reads/writes. Any app restart during a write produces this error."
     recommended_action: "Add 'Journal Mode=WAL;' to both connection strings in appsettings.json and appsettings.Development.json. Specify this in T008 and T009 task descriptions."
     execution_mode: auto
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "Resolved 2026-05-07 — see tasks.md Gate Acknowledgements table for task-level resolution details."
 
   - finding_id: critic-CR3
     severity: high
     description: "EF Core SQLite in-memory mode (Data Source=:memory:) creates a new database per connection. Test seed data is lost between the factory startup scope and the test client scope. Tests incorrectly see empty databases."
     recommended_action: "Use 'Data Source=TestDb;Mode=Memory;Cache=Shared;' and keep a shared SqliteConnection open for the test lifetime. Document in the test infrastructure setup task."
     execution_mode: selective
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "Resolved 2026-05-07 — see tasks.md Gate Acknowledgements table for task-level resolution details."
 
   - finding_id: critic-HP1
     severity: medium
     description: "Both build-test.yml and deploy.yml trigger on push to main, causing two full build+test runs on every merge. Doubles CI cost and elapsed time."
     recommended_action: "Remove push trigger from build-test.yml (T034), keeping only pull_request trigger. The deploy.yml (T035) already runs build+test before deploying."
     execution_mode: auto
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "Resolved 2026-05-07 — see tasks.md Gate Acknowledgements table for task-level resolution details."
 
   - finding_id: critic-HP2
     severity: medium
     description: "GET /api/public/content/articles/{slug} passes raw slug to repository with no endpoint-layer validation. Enables log injection via crafted slug values. Unrestricted length enables DoS via log inflation."
     recommended_action: "Add slug validation in T027 endpoint: validate against regex ^[a-z0-9-]{1,200}$, return 400 for invalid slugs before calling service layer."
     execution_mode: auto
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "Resolved 2026-05-07 — see tasks.md Gate Acknowledgements table for task-level resolution details."
 
   - finding_id: critic-HP3
     severity: medium
     description: "WebApplicationFactory uses production appsettings.json (DefaultConnection points to /home/data/apispark.db) unless explicitly overridden. Tests on Windows will throw FileNotFoundException; on Linux they may corrupt the local dev database."
     recommended_action: "Add explicit connection string override in WebApplicationFactory configuration: factory.WithWebHostBuilder(b => b.UseSetting('ConnectionStrings:DefaultConnection', testDbPath)). Document this requirement in test infrastructure tasks."
     execution_mode: selective
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "Resolved 2026-05-07 — see tasks.md Gate Acknowledgements table for task-level resolution details."
 
   - finding_id: critic-HP4
     severity: medium
     description: "No graceful shutdown configuration. Azure App Service sends SIGTERM before a 5-second kill. A migration or seed write in progress at shutdown leaves SQLite in inconsistent state."
     recommended_action: "Add builder.WebHost.UseShutdownTimeout(TimeSpan.FromSeconds(15)) to Program.cs (T017) and pass app.Lifetime.ApplicationStopping CancellationToken to DatabaseSetup (T016)."
     execution_mode: auto
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "Resolved 2026-05-07 — see tasks.md Gate Acknowledgements table for task-level resolution details."
 ```
 
 ---
@@ -244,3 +244,21 @@ findings:
 - Add graceful shutdown timeout to T017
 
 **Both showstoppers are one-line or two-line fixes. Resolve them, then implementation can proceed with high confidence.**
+
+---
+
+## Resolution Record (2026-05-07)
+
+All 9 findings resolved. Gate status updated to PASS. Implementation may proceed.
+
+| Finding | Resolution Applied |
+|---------|-------------------|
+| SS-1 | T010: `AddJwtBearer()` registered as default scheme; research.md corrected |
+| SS-2 | T017: `public partial class Program { }` added as explicit requirement |
+| CR-1 | T016: `MigrateAsync(ct)` + try/catch + CRITICAL log on failure |
+| CR-2 | T008/T009: `Journal Mode=WAL;Cache=Shared;` in both connection strings |
+| CR-3 | T020/T021/T029: Named shared-cache SQLite + `ApiSparkWebApplicationFactory` |
+| HP-1 | T034: `push` trigger removed from `build-test.yml` |
+| HP-2 | T027: Slug regex validation returning 400 before service layer |
+| HP-3 | T029: `ApiSparkWebApplicationFactory` overrides connection string for all tests |
+| HP-4 | T017: `UseShutdownTimeout(15s)` added; T016: `ApplicationStopping` CT passed |

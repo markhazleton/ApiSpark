@@ -1,9 +1,9 @@
 ---
 gate: analyze
-status: warn
+status: pass
 blocking: false
-severity: warning
-summary: "9 findings (0 critical, 1 high, 3 medium, 5 low). Task dependency ordering issue (C1) must be corrected before implementation. All requirements have task coverage. Constitution fully aligned."
+severity: info
+summary: "9 findings identified; all 9 resolved in tasks.md and research.md (2026-05-07). Tasks updated to fix ordering (C1), auth assumption (U1/U2 via research.md), logging test added (U3), tools manifest (I1), timing assertion (A1), git history scan (A2), post-deploy smoke test (A3), Content-Type assertion (A4). Ready for implementation."
 ---
 
 # Specification Analysis Report: ApiSpark Platform Foundation
@@ -138,72 +138,72 @@ findings:
     description: "T029 (AuthorizationBoundaryTests) depends on TestAuthHandler infrastructure (T031), but T031 is numbered after T029. Executing tasks in order leaves tests uncompilable."
     recommended_action: "Renumber tasks: create TestAuthHandler (currently T031) before AuthorizationBoundaryTests (currently T029). Swap T029 and T031 in tasks.md, or add explicit prerequisite note."
     execution_mode: selective
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "T029 restructured as TestAuthHandler infrastructure first; T030 is AuthorizationBoundaryTests (depends on T029); T031 is AdminHealthEndpoints. Dependency ordering corrected in Phase 5."
 
   - finding_id: analyze-U1
     severity: medium
     description: "T016 (DatabaseSetup.cs) calls db.Database.Migrate() with no startup failure handling. Spec edge case 'EF Core migrations fail at startup' is unaddressed."
     recommended_action: "Extend T016 task description: wrap Migrate() call in try/catch, log CRITICAL using ILogger<Program>, throw to abort startup on migration failure."
     execution_mode: auto
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "T016 updated to specify MigrateAsync(ct) with try/catch, CRITICAL log, and rethrow on failure. Also added path writability check."
 
   - finding_id: analyze-U2
     severity: medium
     description: "Spec edge case '/home/data/ path not writable in Azure App Service' has no task. DatabaseSetup will fail with an unhelpful SQLite exception if the path is read-only."
     recommended_action: "Add a pre-check in T016: attempt Directory.CreateDirectory('/home/data') and verify write permission; log CRITICAL and abort startup if inaccessible."
     execution_mode: selective
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "T016 updated to include directory existence and writability check before calling MigrateAsync."
 
   - finding_id: analyze-U3
     severity: medium
     description: "FR-009 requires 9 structured logging fields. T012 implements the middleware but no test task verifies the 9 fields are present in actual log output."
     recommended_action: "Add test task T012a in Phase 2: use a test logger sink (e.g., xUnit output capture) to assert all 9 fields appear in a logged request entry."
     execution_mode: selective
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "T012a added to Phase 2 Foundational: creates RequestLoggingMiddlewareTests.cs asserting all 9 FR-009 fields are captured."
 
   - finding_id: analyze-I1
     severity: low
     description: "T015 runs 'dotnet ef migrations add' but no task ensures the dotnet-ef tool is installed. Missing tool causes an unclear failure."
     recommended_action: "Add T001a: create .config/dotnet-tools.json with dotnet-ef entry; add 'dotnet tool restore' step to CI workflows T034 and T035."
     execution_mode: auto
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "T001a added to Phase 1 Setup. T034 and T035 updated to include 'dotnet tool restore' step."
 
   - finding_id: analyze-A1
     severity: low
     description: "SC-001 requires health response < 500ms including cold starts. T018 tests correctness only; timing is untested."
     recommended_action: "Add Stopwatch timing assertion to T018: measure response time and assert < 500ms in the test."
     execution_mode: auto
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "T018 updated to include Stopwatch timing assertion asserting response < 500ms."
 
   - finding_id: analyze-A2
     severity: low
     description: "SC-008 requires no secrets in git history. T044 reviews current appsettings files but does not scan historical commits."
     recommended_action: "Extend T043/T044 to scan git log: 'git log --all --full-history --diff-filter=A -- \"*.env\" \"*.pfx\" \"*.p12\"' and confirm no password-containing connection strings in history."
     execution_mode: manual
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "T043 updated with git log scan for *.db, *.pfx, *.env files. T044 updated with git log scan for password/secret patterns in appsettings history."
 
   - finding_id: analyze-A3
     severity: low
     description: "SC-005 (SQLite persists across redeployments) has no post-deploy verification. deploy.yml excludes /home/data/ from artifacts but doesn't confirm data survived."
     recommended_action: "Add a post-deploy smoke test step to deploy.yml that curls /api/health and /api/public/content/articles and fails the deployment if either returns non-200."
     execution_mode: selective
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "T035 updated to include post-deploy curl smoke test step against /api/health."
 
   - finding_id: analyze-A4
     severity: low
     description: "contracts/public-content.yaml specifies application/problem+json for 404 responses. T021 asserts status 404 but not the Content-Type response header."
     recommended_action: "Add content-type assertion in T021: Assert.Equal('application/problem+json', response.Content.Headers.ContentType?.MediaType)."
     execution_mode: auto
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "T021 updated to assert Content-Type: application/problem+json on 404 responses."
 ```
 
 ---

@@ -50,6 +50,7 @@ All paths relative to repository root:
 **Purpose**: Create the solution and project files. Nothing compiles yet.
 
 - [ ] T001 Create `.gitignore` (standard .NET: bin/, obj/, *.user, `data/*.db`, `*.db`, `*.db-shm`, `*.db-wal`, `.env`, `publish/`)
+- [ ] T001a Create `.config/dotnet-tools.json` via `dotnet new tool-manifest`; add `dotnet-ef` tool pinned to the same major version as EF Core packages via `dotnet tool install dotnet-ef`; this ensures `dotnet tool restore` in CI reproducibly installs the correct `dotnet ef` CLI before T015 runs *(resolves analyze-I1)*
 - [ ] T002 Create `ApiSpark.sln` at repository root using `dotnet new sln -n ApiSpark`
 - [ ] T003 [P] Create `src/ApiSpark.Api/ApiSpark.Api.csproj` using `dotnet new web -n ApiSpark.Api -o src/ApiSpark.Api --framework net10.0` and add to solution
 - [ ] T004 [P] Create `tests/ApiSpark.Api.Tests/ApiSpark.Api.Tests.csproj` using `dotnet new xunit -n ApiSpark.Api.Tests -o tests/ApiSpark.Api.Tests --framework net10.0` and add to solution; add project reference to ApiSpark.Api
@@ -69,12 +70,12 @@ All paths relative to repository root:
 
 ### Configuration
 
-- [ ] T008 Create `src/ApiSpark.Api/appsettings.json` with: `ConnectionStrings:DefaultConnection` → `Data Source=/home/data/apispark.db`, `Database:ApplyMigrationsOnStartup` → `true`, `Database:SeedOnStartup` → `false`, `AllowedOrigins: []`
-- [ ] T009 Create `src/ApiSpark.Api/appsettings.Development.json` with: `ConnectionStrings:DefaultConnection` → `Data Source=./data/apispark.local.db`, `Database:ApplyMigrationsOnStartup` → `true`, `Database:SeedOnStartup` → `true`, `AllowedOrigins: ["http://localhost:5173","http://localhost:3000"]`
+- [ ] T008 Create `src/ApiSpark.Api/appsettings.json` with: `ConnectionStrings:DefaultConnection` → `Data Source=/home/data/apispark.db;Journal Mode=WAL;Cache=Shared;`, `Database:ApplyMigrationsOnStartup` → `true`, `Database:SeedOnStartup` → `false`, `AllowedOrigins: []` — WAL mode allows concurrent reads during writes, preventing `SQLite Error 5: database is locked` on the Azure App Service single instance *(resolves critic-CR2)*
+- [ ] T009 Create `src/ApiSpark.Api/appsettings.Development.json` with: `ConnectionStrings:DefaultConnection` → `Data Source=./data/apispark.local.db;Journal Mode=WAL;Cache=Shared;`, `Database:ApplyMigrationsOnStartup` → `true`, `Database:SeedOnStartup` → `true`, `AllowedOrigins: ["http://localhost:5173","http://localhost:3000"]` *(resolves critic-CR2)*
 
 ### Authorization Policies
 
-- [ ] T010 Create `src/ApiSpark.Api/Infrastructure/Auth/AuthorizationSetup.cs` — registers three policies: `AdminOnly` (authenticated + Admin role), `Publisher` (authenticated + Admin or Publisher role), `ServiceOrAdmin` (Admin role OR `scope` claim `apispark.publish`); call `builder.Services.AddAuthentication().AddAuthorization()` in `Program.cs`
+- [ ] T010 Create `src/ApiSpark.Api/Infrastructure/Auth/AuthorizationSetup.cs` — **IMPORTANT**: register an authentication scheme AND authorization policies together: `builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer()` (uses default dev-safe settings; without a registered scheme, `RequireAuthorization()` throws `InvalidOperationException` on challenge — HTTP 500, not 401); then register three named policies: `AdminOnly` (authenticated + Admin role), `Publisher` (authenticated + Admin or Publisher role), `ServiceOrAdmin` (Admin role OR `scope` claim `apispark.publish`); call `app.UseAuthentication()` and `app.UseAuthorization()` in `Program.cs` middleware pipeline in that order *(resolves critic-SS1)*
 
 ### CORS
 
@@ -83,6 +84,7 @@ All paths relative to repository root:
 ### Structured Logging Middleware
 
 - [ ] T012 Create `src/ApiSpark.Api/Infrastructure/Observability/RequestLoggingMiddleware.cs` — captures per-request: path, method, status code, duration (ms), correlation ID (from `X-Correlation-ID` header or `HttpContext.TraceIdentifier`), user ID (from `ClaimTypes.NameIdentifier` when authenticated), feature name (first route segment after `/api/`), operation name (full route pattern), success/failure (`statusCode < 400`); logs as structured ILogger Information entry; register in `Program.cs`
+- [ ] T012a [P] Create `tests/ApiSpark.Api.Tests/Infrastructure/Observability/RequestLoggingMiddlewareTests.cs` — use a custom `ILogger` test sink (e.g., a `List<LogEntry>` populated via `ILoggerProvider`); make a request through the test factory; assert that the captured log entry contains all 9 FR-009 fields: `RequestPath`, `Method`, `StatusCode`, `DurationMs`, `CorrelationId`, `FeatureName`, `OperationName`, `Success`; verify `UserId` is absent for anonymous requests and present for authenticated ones *(resolves analyze-U3)*
 
 ### Data Layer
 
@@ -92,11 +94,11 @@ All paths relative to repository root:
   - `Tag.cs` — fields: `Id`, `Name`, `Articles` (ICollection<Article>)
   - `ArticleStatus.cs` — enum: `Draft = 0`, `Published = 1`
 - [ ] T015 Run `dotnet ef migrations add InitialCreate --project src/ApiSpark.Api --output-dir Migrations` to generate the first EF Core migration; verify migration file is created
-- [ ] T016 Create `src/ApiSpark.Api/Infrastructure/Data/DatabaseSetup.cs` — static helper called from `Program.cs` after `app.Build()`: creates scope, resolves `ApiSparkDbContext`, calls `db.Database.Migrate()` when `Database:ApplyMigrationsOnStartup` is `true`, then calls `SeedData.LoadAsync(db, ct)` when Articles table is empty and `Database:SeedOnStartup` is `true`
+- [ ] T016 Create `src/ApiSpark.Api/Infrastructure/Data/DatabaseSetup.cs` — async static helper called from `Program.cs` after `app.Build()`. Implementation requirements: (1) check `/home/data/` directory exists and is writable before proceeding (log CRITICAL + throw if not, so Azure App Service fails fast with a clear error rather than a cryptic SQLite exception); (2) use `await db.Database.MigrateAsync(ct)` — **not** the synchronous `Migrate()` which blocks the thread pool; (3) wrap in try/catch: on `Exception`, log `LogLevel.Critical` with message "Database migration failed — aborting startup" and rethrow to abort startup; (4) call `SeedData.LoadAsync(db, ct)` only when `Articles` table is empty AND `Database:SeedOnStartup` is `true` *(resolves critic-CR1, analyze-U1, analyze-U2)*
 
 ### Route Group Skeleton
 
-- [ ] T017 Create `src/ApiSpark.Api/Program.cs` (full version) — wire all services (auth, CORS, DbContext, Swagger dev-only, logging middleware); define route groups: `publicApi = app.MapGroup("/api/public")`, `adminApi = app.MapGroup("/api/admin").RequireAuthorization("AdminOnly")`, `publishApi = app.MapGroup("/api/publish").RequireAuthorization("Publisher")`, `integrationsApi = app.MapGroup("/api/integrations").RequireAuthorization("ServiceOrAdmin")`; call `DatabaseSetup.InitializeAsync(app)` before `app.Run()`
+- [ ] T017 Create `src/ApiSpark.Api/Program.cs` (full version) — wire all services (auth, CORS, DbContext, Swagger dev-only, logging middleware); add `builder.WebHost.UseShutdownTimeout(TimeSpan.FromSeconds(15))` so Azure App Service SIGTERM allows in-flight SQLite writes to complete before process kill; define route groups: `publicApi = app.MapGroup("/api/public")`, `adminApi = app.MapGroup("/api/admin").RequireAuthorization("AdminOnly")`, `publishApi = app.MapGroup("/api/publish").RequireAuthorization("Publisher")`, `integrationsApi = app.MapGroup("/api/integrations").RequireAuthorization("ServiceOrAdmin")`; call `DatabaseSetup.InitializeAsync(app)` before `app.Run()`; **add `public partial class Program { }` as the very last line** — required for `WebApplicationFactory<Program>` in the test project to access the class across assembly boundaries (without this, all test projects fail CS0122 at compile time) *(resolves critic-SS2, critic-HP4)*
 
 **Checkpoint**: `dotnet build` green. Route groups registered. `dotnet run` starts and logs startup messages.
 
@@ -112,7 +114,7 @@ All paths relative to repository root:
 
 > Write tests FIRST — they must FAIL before implementation (T019).
 
-- [ ] T018 [P] [US1] Create `tests/ApiSpark.Api.Tests/Features/Health/HealthEndpointTests.cs` — using `WebApplicationFactory<Program>`: test `GET /api/health` returns `200`; response body deserializes to `HealthResponse` with `status = "Healthy"`, `service = "ApiSpark"`, non-empty `version`; test anonymous access (no auth header required); test repeated calls return consistent `200`
+- [ ] T018 [P] [US1] Create `tests/ApiSpark.Api.Tests/Features/Health/HealthEndpointTests.cs` — using `WebApplicationFactory<Program>`: test `GET /api/health` returns `200`; response body deserializes to `HealthResponse` with `status = "Healthy"`, `service = "ApiSpark"`, non-empty `version`; test anonymous access (no auth header required); test repeated calls return consistent `200`; use `Stopwatch` to measure wall-clock response time and assert `elapsed.TotalMilliseconds < 500` (SC-001 — cold start included since `WebApplicationFactory` initializes the host before the first request) *(resolves analyze-A1)*
 
 ### Implementation for User Story 1
 
@@ -130,17 +132,17 @@ All paths relative to repository root:
 
 ### Tests for User Story 2
 
-- [ ] T020 [P] [US2] Create `tests/ApiSpark.Api.Tests/Infrastructure/Data/ContentRepositoryTests.cs` — use temporary SQLite database (`Data Source=:memory:` or temp file): test `GetPublishedArticlesAsync` returns only Published articles; test `GetPublishedArticleBySlugAsync` returns null for Draft slug; test `GetAllTagsAsync` returns all tags
-- [ ] T021 [P] [US2] Create `tests/ApiSpark.Api.Tests/Features/PublicContent/PublicContentEndpointTests.cs` — using `WebApplicationFactory<Program>` with seeded in-memory/temp SQLite: test `GET /api/public/content/articles` returns `200` with list containing only published items; test each article summary has slug, title, summary, publishDate, tags (no body); test `GET /api/public/content/articles/hello-world` returns `200` with full body; test `GET /api/public/content/articles/draft-article` returns `404`; test `GET /api/public/content/articles/nonexistent` returns `404`; test `GET /api/public/content/tags` returns `200` with all tags; test empty DB returns `200` with empty list
+- [ ] T020 [P] [US2] Create `tests/ApiSpark.Api.Tests/Infrastructure/Data/ContentRepositoryTests.cs` — use a **named shared-cache SQLite** database (NOT bare `Data Source=:memory:` — each new connection to `:memory:` gets an empty database): use `Data Source=ContentRepoTest_[Guid];Mode=Memory;Cache=Shared;`, open one `SqliteConnection` for the test lifetime, apply migrations via `db.Database.EnsureCreated()`, seed data, then run assertions; test `GetPublishedArticlesAsync` returns only Published articles; test `GetPublishedArticleBySlugAsync` returns null for Draft slug; test `GetAllTagsAsync` returns all tags *(resolves critic-CR3)*
+- [ ] T021 [P] [US2] Create `tests/ApiSpark.Api.Tests/Features/PublicContent/PublicContentEndpointTests.cs` — `WebApplicationFactory<Program>` must override the connection string to a named shared-cache test database (`Data Source=ContentEndpointTest_[Guid];Mode=Memory;Cache=Shared;`) and keep the `SqliteConnection` open for the factory lifetime (create a custom `ApiSparkWebApplicationFactory` base class shared by T020, T021, T029, T036 that handles this pattern); test `GET /api/public/content/articles` returns `200` with list of only published items; test each article summary has slug, title, summary, publishDate, tags but NO body field; test `GET /api/public/content/articles/hello-world` returns `200` with full body; test `GET /api/public/content/articles/draft-article` returns `404`; test `GET /api/public/content/articles/nonexistent` returns `404`; for 404 responses assert `Content-Type: application/problem+json`; test `GET /api/public/content/tags` returns `200` with all tags; test empty DB returns `200` with empty list *(resolves critic-CR3, critic-HP3, analyze-A4)*
 
 ### Implementation for User Story 2
 
 - [ ] T022 [P] [US2] Create `src/ApiSpark.Api/Features/PublicContent/ContentModels.cs` — response records: `ArticleSummary(string Slug, string Title, string Summary, DateTimeOffset? PublishDate, IReadOnlyList<string> Tags)`, `ArticleDetail(string Slug, string Title, string Summary, string Body, DateTimeOffset? PublishDate, IReadOnlyList<string> Tags)`, `TagResponse(string Name)`
 - [ ] T023 [P] [US2] Create `src/ApiSpark.Api/Infrastructure/Data/Repositories/IContentRepository.cs` — interface: `GetPublishedArticlesAsync`, `GetPublishedArticleBySlugAsync`, `GetAllTagsAsync` (matching data-model.md signatures)
-- [ ] T024 [US2] Create `src/ApiSpark.Api/Infrastructure/Data/Repositories/ContentRepository.cs` — EF Core implementation: filter `Status == ArticleStatus.Published` at query level; slug lookup returns null for Draft; eager-load Tags; map to response records (no AutoMapper — manual projection in LINQ)
+- [ ] T024 [US2] Create `src/ApiSpark.Api/Infrastructure/Data/Repositories/ContentRepository.cs` — EF Core implementation: filter `Status == ArticleStatus.Published` at query level; slug lookup returns null for Draft; **must use `.Include(a => a.Tags)` explicitly** on every query that returns articles — omitting this causes N+1 queries (EF Core does not lazy-load by default without virtual navigation properties and a lazy-loading proxy); map to response records via LINQ projection (no AutoMapper — manual `.Select(a => new ArticleSummary(...))`); pass `CancellationToken` to all async EF Core methods (`.ToListAsync(ct)`, `.FirstOrDefaultAsync(ct)`) to allow caller cancellation to propagate
 - [ ] T025 [US2] Register `IContentRepository` → `ContentRepository` as scoped service in `Program.cs`
 - [ ] T026 [US2] Create `src/ApiSpark.Api/Features/PublicContent/ContentService.cs` — thin service delegating to `IContentRepository`; inject via constructor; no business logic at this phase beyond delegation
-- [ ] T027 [US2] Create `src/ApiSpark.Api/Features/PublicContent/PublicContentEndpoints.cs` — extension `MapPublicContentApi(this RouteGroupBuilder group)`: `GET /content/articles` → `GetPublishedArticles`; `GET /content/articles/{slug}` → `GetArticleBySlug` (returns `404` typed result when null); `GET /content/tags` → `GetAllTags`; all `.WithOpenApi().AllowAnonymous()`; call `publicApi.MapPublicContentApi()` from `Program.cs`
+- [ ] T027 [US2] Create `src/ApiSpark.Api/Features/PublicContent/PublicContentEndpoints.cs` — extension `MapPublicContentApi(this RouteGroupBuilder group)`: `GET /content/articles` → `GetPublishedArticles`; `GET /content/articles/{slug}` → `GetArticleBySlug`: **validate the slug before calling the service** — if slug does not match `^[a-z0-9][a-z0-9-]{0,198}[a-z0-9]$|^[a-z0-9]$` (max 200 chars, lowercase alphanumeric and hyphens only), return `Results.Problem("Invalid slug format", statusCode: 400)` immediately without reaching the repository (prevents log injection via crafted slug values); return `Results.NotFound()` as `TypedResults.NotFound()` when service returns null; `GET /content/tags` → `GetAllTags`; all `.WithOpenApi().AllowAnonymous()`; call `publicApi.MapPublicContentApi()` from `Program.cs` *(resolves critic-HP2)*
 - [ ] T028 [US2] Create `src/ApiSpark.Api/Infrastructure/Data/Seed/SeedData.cs` — `LoadAsync(ApiSparkDbContext db, CancellationToken ct)`: seeds 2 published articles (`hello-world`, `getting-started-with-apispark`) + 1 draft article (`draft-article`) + tags (`general`, `intro`, `apispark`, `tutorial`); guard: only runs when `db.Articles.AnyAsync()` is false
 
 **Checkpoint**: `dotnet test --filter "Category=US2"` green. Seeded articles retrievable; draft excluded; 404 for missing/draft slugs.
@@ -153,14 +155,17 @@ All paths relative to repository root:
 
 **Independent Test**: `GET /api/admin/health/deep` without auth → `401`. With valid Admin credentials → not `401`/`403`.
 
+### Infrastructure for User Story 3 *(must complete before tests)*
+
+- [ ] T029 [US3] Create test authentication infrastructure in `tests/ApiSpark.Api.Tests/Infrastructure/Auth/` — **this task MUST complete before T030**: create `TestAuthHandler.cs` (inherits `AuthenticationHandler<AuthenticationSchemeOptions>`) that reads a `TestClaims` header from the request and populates `HttpContext.User` with those claims; create `ApiSparkWebApplicationFactory.cs` (the shared factory base for all test phases) that: overrides `ConnectionStrings:DefaultConnection` to a named shared-cache SQLite (`Data Source=ApiSparkTest_{Guid};Mode=Memory;Cache=Shared;`), keeps the `SqliteConnection` open for the factory lifetime, and registers `TestAuthHandler` as a named scheme `"TestScheme"` so tests can inject Admin or non-Admin claims via request headers; expose helpers `WithAdminClaims()` and `WithPublisherClaims()` *(resolves analyze-C1, critic-HP3)*
+
 ### Tests for User Story 3
 
-- [ ] T029 [P] [US3] Create `tests/ApiSpark.Api.Tests/Infrastructure/Auth/AuthorizationBoundaryTests.cs` — using `WebApplicationFactory<Program>`: test `GET /api/admin/health/deep` without auth header returns `401`; test `GET /api/admin/health/deep` with valid Admin JWT/claim returns `200`; test caller with authenticated identity but without Admin role returns `403`; test `GET /api/public/content/articles` without auth returns `200` (public access unaffected)
+- [ ] T030 [P] [US3] Create `tests/ApiSpark.Api.Tests/Infrastructure/Auth/AuthorizationBoundaryTests.cs` — **depends on T029**: using `ApiSparkWebApplicationFactory`: test `GET /api/admin/health/deep` without any auth header returns `401`; test with `TestClaims` header carrying Admin role returns `200`; test with `TestClaims` header carrying non-Admin authenticated identity returns `403`; test `GET /api/public/content/articles` without auth header returns `200` (public route unaffected by auth boundary) *(resolves analyze-C1)*
 
 ### Implementation for User Story 3
 
-- [ ] T030 [US3] Create `src/ApiSpark.Api/Features/Health/AdminHealthEndpoints.cs` — `MapAdminHealthApi(this RouteGroupBuilder group)`: registers `GET /health/deep` → returns deep health response (checks DB connectivity via `db.Database.CanConnectAsync()`); returns `200` with `{"status":"Healthy","checks":{"database":"ok"}}` or `503` on failure; endpoint is inside `adminApi` group which already has `RequireAuthorization("AdminOnly")`; call `adminApi.MapAdminHealthApi()` from `Program.cs`
-- [ ] T031 [US3] Configure test authentication in `tests/ApiSpark.Api.Tests/` — create a `TestAuthHandler` (inherits `AuthenticationHandler<AuthenticationSchemeOptions>`) that allows tests to inject claims; configure `WebApplicationFactory` to register test auth scheme; enable Admin-role and non-Admin-role test helpers
+- [ ] T031 [US3] Create `src/ApiSpark.Api/Features/Health/AdminHealthEndpoints.cs` — `MapAdminHealthApi(this RouteGroupBuilder group)`: registers `GET /health/deep` → checks DB connectivity via `await db.Database.CanConnectAsync()`; returns `200 OK` with `{"status":"Healthy","checks":{"database":"ok"}}` or `503 Service Unavailable` on failure; endpoint lives inside `adminApi` route group which already carries `RequireAuthorization("AdminOnly")` — no additional annotation needed; call `adminApi.MapAdminHealthApi()` from `Program.cs`
 
 **Checkpoint**: `dotnet test --filter "Category=US3"` green. Unauthenticated → `401`; Admin → `200`; non-Admin → `403`.
 
@@ -192,8 +197,8 @@ All paths relative to repository root:
 
 ### Implementation for User Story 5 (no additional tests — CI itself is the test)
 
-- [ ] T034 [P] [US5] Create `.github/workflows/build-test.yml` — triggers on `pull_request` to `main` and `push` to `main`; steps: `actions/checkout@v4`, `actions/setup-dotnet@v4` (version `10.0.x`), `dotnet restore`, `dotnet build --configuration Release --no-restore`, `dotnet test --configuration Release --no-build --logger "trx;LogFileName=test-results.trx"`, upload test results artifact
-- [ ] T035 [P] [US5] Create `.github/workflows/deploy.yml` — triggers on `push` to `main`; steps: checkout, setup .NET 10, restore, build, test, `dotnet publish src/ApiSpark.Api/ApiSpark.Api.csproj --configuration Release --output ./publish`, `azure/webapps-deploy@v3` with `app-name: apispark` and `publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}`; deploy step must NOT include the `./data/` directory
+- [ ] T034 [P] [US5] Create `.github/workflows/build-test.yml` — triggers on **`pull_request` to `main` only** (do NOT add a `push` trigger — `deploy.yml` already runs build+test on merge to `main`; having both trigger on `push` wastes double CI minutes with no benefit); steps: `actions/checkout@v4`, `actions/setup-dotnet@v4` (version `10.0.x`), `dotnet tool restore` (installs `dotnet-ef` from `.config/dotnet-tools.json`), `dotnet restore`, `dotnet build --configuration Release --no-restore`, `dotnet test --configuration Release --no-build --logger "trx;LogFileName=test-results.trx"`, upload test results artifact *(resolves critic-HP1, analyze-I1)*
+- [ ] T035 [P] [US5] Create `.github/workflows/deploy.yml` — triggers on `push` to `main`; steps: checkout, setup .NET 10, `dotnet tool restore`, restore, build, test, `dotnet publish src/ApiSpark.Api/ApiSpark.Api.csproj --configuration Release --output ./publish`, `azure/webapps-deploy@v3` with `app-name: apispark` and `publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}`; the publish output directory MUST NOT include `data/` — explicitly exclude with `--no-build` output review; **add a post-deploy smoke test step** after deployment: `curl --fail --max-time 30 https://api.markhazleton.com/api/health` — if the health endpoint does not return 200 within 30 seconds, fail the workflow and alert the team (verifies SC-005: database survived the deployment and app started successfully) *(resolves analyze-A3)*
 
 **Checkpoint**: PR to `main` triggers `build-test.yml` and reports status. Merge triggers `deploy.yml`.
 
@@ -226,8 +231,8 @@ All paths relative to repository root:
 
 **Purpose**: Final validation, edge case hardening, and documentation completeness checks.
 
-- [ ] T043 [P] Verify `.gitignore` excludes: `data/*.db`, `*.db`, `*.db-shm`, `*.db-wal`, `publish/`, `*.user`, `bin/`, `obj/`; confirm no `.db` file exists in git history using `git log --all --full-history -- "*.db"`
-- [ ] T044 [P] Review all `appsettings*.json` files: confirm no connection strings with passwords, no API keys, no tokens; confirm `DefaultConnection` uses file path only (no credentials)
+- [ ] T043 [P] Verify `.gitignore` excludes: `data/*.db`, `*.db`, `*.db-shm`, `*.db-wal`, `publish/`, `*.user`, `bin/`, `obj/`; run `git log --all --full-history --diff-filter=A -- "*.db" "*.db-shm" "*.db-wal"` and confirm zero matches (SC-008: no SQLite files in git history); also run `git log --all --full-history --diff-filter=A -- "*.pfx" "*.p12" "*.env" ".env*"` to check for accidentally committed secrets or certificate files *(resolves analyze-A2)*
+- [ ] T044 [P] Review all `appsettings*.json` files: confirm no connection strings with passwords, no API keys, no tokens; confirm `DefaultConnection` values contain only file paths (no `Password=`, `User Id=`, or credential parameters); review git log for any commits that may have included `appsettings.*.json` changes containing potential secrets: `git log --all -p -- "src/**/appsettings*.json" | grep -i "password\|secret\|key\|token"` — zero matches required *(resolves analyze-A2)*
 - [ ] T045 Validate `quickstart.md` steps match the actual running application — walk through each step: clone → build → run → curl health → curl articles → curl swagger; note any discrepancies and update `quickstart.md`
 - [ ] T046 Add `data/` directory with `.gitkeep` and ensure `data/*.db` is in `.gitignore`; create `data/seed/` placeholder for future JSON seed files
 - [ ] T047 [P] Run `dotnet test` (full suite) and confirm all tests pass with zero failures
@@ -277,7 +282,7 @@ Phase 2:  T008 ‖ T009 (config files) → then T010 ‖ T011 ‖ T012 ‖ T013
           T013 → T014 → T015 (sequential: DbContext → entities → migration)
 Phase 3:  T018 (test) created, then T019 (impl)
 Phase 4:  T020 ‖ T021 ‖ T022 ‖ T023 (tests + models in parallel, then T024 → T025 → T026 → T027 → T028)
-Phase 5:  T029 (test) then T030 ‖ T031 in parallel
+Phase 5:  T029 (TestAuthHandler infrastructure) → T030 [P] (AuthorizationBoundaryTests) ‖ T031 (AdminHealthEndpoints)
 Phase 6:  T032 (test) then T033 (one task)
 Phase 7:  T034 ‖ T035 (two workflow files, fully independent)
 Phase 8:  T036 (test) then T037 ‖ T038 ‖ T039 ‖ T040 ‖ T041 (ADRs all independent) → T042
@@ -329,7 +334,28 @@ Sequential after Batch A:
 
 ## Gate Acknowledgements
 
-No unresolved gate findings at time of task generation. Gates (`analyze`, `critic`) will be run after task generation and findings recorded here if any blocking concerns arise.
+All `analyze` and `critic` gate findings have been resolved in-place in this tasks.md. No proceed-anyway overrides required.
+
+| Gate | Finding ID | Severity | Resolution | Applied In |
+|------|-----------|----------|-----------|-----------|
+| critic | SS-1 | Showstopper | Register `AddBearerToken()` auth scheme alongside policies | T010 |
+| critic | SS-2 | Showstopper | Add `public partial class Program { }` to Program.cs | T017 |
+| critic | CR-1 | Critical | Use `await db.Database.MigrateAsync(ct)` | T016 |
+| critic | CR-2 | Critical | Add `Journal Mode=WAL;Cache=Shared;` to connection strings | T008, T009 |
+| critic | CR-3 | Critical | Use named shared-cache SQLite + `ApiSparkWebApplicationFactory` | T020, T021, T029 |
+| critic | HP-1 | High | Remove `push` trigger from `build-test.yml` | T034 |
+| critic | HP-2 | High | Add slug regex validation at endpoint layer | T027 |
+| critic | HP-3 | High | `ApiSparkWebApplicationFactory` overrides connection string | T029 |
+| critic | HP-4 | High | Add `UseShutdownTimeout(15s)` to Program.cs | T017 |
+| analyze | C1 | High | Restructure Phase 5: T029=infra first, T030=tests, T031=impl | Phase 5 |
+| analyze | U1 | Medium | Migration error handling + try/catch in DatabaseSetup | T016 |
+| analyze | U2 | Medium | Path writability check before migration | T016 |
+| analyze | U3 | Medium | Add logging middleware test task | T012a |
+| analyze | I1 | Low | Add dotnet-tools.json + `dotnet tool restore` in CI | T001a, T034, T035 |
+| analyze | A1 | Low | Add Stopwatch timing assertion (< 500ms) to health test | T018 |
+| analyze | A2 | Low | Add git log history scan in Polish phase | T043, T044 |
+| analyze | A3 | Low | Add post-deploy smoke test curl step | T035 |
+| analyze | A4 | Low | Add `Content-Type: application/problem+json` assertion | T021 |
 
 ---
 
@@ -356,18 +382,18 @@ No unresolved gate findings at time of task generation. Gates (`analyze`, `criti
 
 | Phase | Tasks | Notes |
 |-------|-------|-------|
-| Phase 1: Setup | 7 (T001–T007) | Sequential scaffold |
-| Phase 2: Foundational | 10 (T008–T017) | Critical path |
+| Phase 1: Setup | 8 (T001, T001a, T002–T007) | Sequential scaffold + tools manifest |
+| Phase 2: Foundational | 12 (T008–T017 + T012a + T001a) | Critical path; T012a = logging test |
 | Phase 3: US1 | 2 (T018–T019) | MVP increment |
 | Phase 4: US2 | 9 (T020–T028) | Core content feature |
-| Phase 5: US3 | 3 (T029–T031) | Auth boundary |
+| Phase 5: US3 | 3 (T029–T031) | Auth infra first, then tests + impl |
 | Phase 6: US4 | 2 (T032–T033) | Swagger gate |
 | Phase 7: US5 | 2 (T034–T035) | CI/CD workflows |
 | Phase 8: US6 | 7 (T036–T042) | Local setup + ADRs |
 | Phase 9: Polish | 6 (T043–T048) | Hardening |
-| **Total** | **48 tasks** | |
+| **Total** | **52 tasks** | +4 added for gate findings |
 
-Parallel opportunities: 22 tasks marked [P].
+Parallel opportunities: 24 tasks marked [P].
 
 ---
 
@@ -377,5 +403,6 @@ Parallel opportunities: 22 tasks marked [P].
 - [Story] label maps each task to a user story for traceability and independent testing
 - Each user story phase ends with a checkpoint — validate independently before moving on
 - Seed data (T028) is required before US2 integration tests run against a real (temp) SQLite DB
-- T031 (test auth handler) is a prerequisite for US3 tests — must be complete before T029 test can pass
+- T029 (test auth infrastructure / `ApiSparkWebApplicationFactory`) is a prerequisite for T030 and all other WebApplicationFactory-based tests — complete it in Phase 5 before any other test phase runs
+- All WebApplicationFactory-based tests MUST use `ApiSparkWebApplicationFactory` (from T029) to override the connection string to a named shared-cache SQLite — tests that use the default factory will attempt to open `/home/data/apispark.db` and fail
 - `.gitignore` must exclude `*.db` before any `dotnet run` that creates `data/apispark.local.db`
