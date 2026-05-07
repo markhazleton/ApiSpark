@@ -6,7 +6,7 @@
 - **Source Branch**: `001-apispark-foundation`
 - **Target Branch**: `main`
 - **Review Date**: 2026-05-07 17:00:00 UTC
-- **Last Updated**: 2026-05-07 17:00:00 UTC
+- **Last Updated**: 2026-05-07 18:00:00 UTC
 - **Reviewed Commit**: `79a5f2e143b827035d5bbd71182f74463f85eb3e`
 - **Reviewer**: devspark.pr-review
 - **Constitution Version**: 1.1.0 (2026-05-06)
@@ -16,6 +16,7 @@
 | Rev | Commit | Date | Critical | High | Medium | Low | CON | Test Command | Result |
 |-----|--------|------|----------|------|--------|-----|-----|--------------|--------|
 | 1 | `79a5f2e` | 2026-05-07 | 0 | 2 | 2 | 2 | 0 | `dotnet test tests/ApiSpark.Api.Tests` | ✅ 27/27 pass |
+| 2 | `b9ec2de` | 2026-05-07 | 0 | 0 | 0 | 0 | 0 | `dotnet test tests/ApiSpark.Api.Tests` | ✅ 37/37 pass |
 
 ## PR Summary
 
@@ -30,11 +31,11 @@
 
 | Metric | Value |
 |--------|-------|
-| Files changed | 60 |
-| Lines added | +3,976 |
-| Lines removed | −2 |
-| Net lines | +3,974 |
-| Commit snapshot | `79a5f2e` |
+| Files changed | 68 |
+| Lines added | +4,157 |
+| Lines removed | −24 |
+| Net lines | +4,133 |
+| Commit snapshot | `b9ec2de` |
 
 ## Executive Summary
 
@@ -58,7 +59,7 @@
 
 ### Immediate Actions (Blocking — must resolve before merge)
 
-- [ ] **H-01** `src/ApiSpark.Api/Infrastructure/Cors/CorsSetup.cs:15–19` — CORS falls back to localhost origins when `AllowedOrigins` is empty, silently blocking production clients
+- [x] **H-01** `src/ApiSpark.Api/Infrastructure/Cors/CorsSetup.cs:15–19` — CORS falls back to localhost origins when `AllowedOrigins` is empty, silently blocking production clients — *Fixed in b9ec2de: `AddApiSparkCors` now accepts `IWebHostEnvironment`; localhost fallback is Development-only; implicit deny in non-Development when origins are empty*
   - **Broken code**:
     ```csharp
     if (origins.Length > 0)
@@ -78,7 +79,7 @@
     ```
     Pass `IWebHostEnvironment` into `AddApiSparkCors()`.
 
-- [ ] **H-02** `tests/ApiSpark.Api.Tests/Infrastructure/Observability/` — T012a marked complete but `RequestLoggingMiddlewareTests.cs` was never created; FR-009 (9 structured logging fields) has no field-by-field assertion test
+- [x] **H-02** `tests/ApiSpark.Api.Tests/Infrastructure/Observability/` — T012a marked complete but `RequestLoggingMiddlewareTests.cs` was never created; FR-009 (9 structured logging fields) has no field-by-field assertion test — *Fixed in b9ec2de: created `RequestLoggingMiddlewareTests.cs` (11 tests) using `LoggingTestFactory` + `CaptureLoggerProvider`; all 9 FR-009 fields asserted*
   - **Issue**: `tasks.md` marks T012a as `[X]` complete, but no test file exists at `tests/ApiSpark.Api.Tests/Infrastructure/Observability/RequestLoggingMiddlewareTests.cs`. The 9 required FR-009 fields (path, method, status, duration, correlationId, userId, featureName, operationName, success) are captured in `RequestLoggingMiddleware.cs` but are never verified by a test. Constitution Principle II (Test-First, NON-NEGOTIABLE) requires tests to verify meaningful behavior.
   - **Fix**: Create `tests/ApiSpark.Api.Tests/Infrastructure/Observability/RequestLoggingMiddlewareTests.cs` that uses a captured `ILogger` sink to assert all 9 fields are present in the logged output for a standard request. Minimal implementation using `Microsoft.Extensions.Logging.Testing` or a custom `FakeLogger`:
     ```csharp
@@ -95,19 +96,19 @@
 
 ### Recommended Improvements
 
-- [ ] **M-01** `tests/ApiSpark.Api.Tests/UnitTest1.cs:1–10` — Auto-generated xUnit scaffolding test with empty body committed; dead code
+- [x] **M-01** `tests/ApiSpark.Api.Tests/UnitTest1.cs:1–10` — Auto-generated xUnit scaffolding test with empty body committed; dead code — *Fixed in b9ec2de: file deleted*
   - The file contains `public void Test1() { }` which always passes trivially, adds noise to the test report, and misleads reviewers about test quality. Remove or replace with a meaningful test.
 
-- [ ] **M-02** `.github/workflows/deploy.yml:44` — Post-deploy smoke test URL is hardcoded
+- [x] **M-02** `.github/workflows/deploy.yml:44` — Post-deploy smoke test URL is hardcoded — *Fixed in b9ec2de: replaced with `${{ vars.DEPLOYED_HEALTH_URL }}` GitHub Actions variable with fallback to the production URL*
   - `curl --fail --max-time 30 https://api.markhazleton.com/api/health` assumes a specific domain. If the app is deployed to a staging or preview environment, this step will always test the wrong endpoint.
   - Fix: use a GitHub Actions variable or repository secret: `${{ vars.DEPLOYED_HEALTH_URL }}` or derive from the Azure App Service name.
 
 ### Low Priority Improvements
 
-- [ ] **L-01** `dotnet-tools.json:1` — Tool manifest at repository root instead of standard `.config/dotnet-tools.json` location
+- [x] **L-01** `dotnet-tools.json:1` — Tool manifest at repository root instead of standard `.config/dotnet-tools.json` location — *Fixed in b9ec2de: `git mv dotnet-tools.json .config/dotnet-tools.json`*
   - The dotnet SDK convention is `.config/dotnet-tools.json`. While the root location is functional (found by `dotnet tool restore`), it diverges from the standard and may confuse tooling. Consider moving to `.config/dotnet-tools.json` to match `.NET` conventions.
 
-- [ ] **L-02** `ApiSpark.slnx` — New XML solution format committed alongside the implied `ApiSpark.sln`
+- [x] **L-02** `ApiSpark.slnx` — New XML solution format committed alongside the implied `ApiSpark.sln` — *Fixed in b9ec2de: `git rm ApiSpark.slnx`; `*.slnx` added to `.gitignore`; canonical solution file is `ApiSpark.sln`*
   - Both solution formats exist. The `.slnx` format is new (VS 2022 17.9+) and not all tooling supports it yet. Consider `.gitignore`-ing `ApiSpark.slnx` or removing `ApiSpark.sln` to avoid ambiguity. If both are kept, document which is the canonical solution file.
 
 ### Constitution Improvements
