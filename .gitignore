@@ -442,3 +442,6 @@ data/*.db-wal
 # ApiSpark — deployment artifacts
 publish/
 
+# Ignore new XML solution format (canonical format is .sln)
+*.slnx
+

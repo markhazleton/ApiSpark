@@ -39,8 +39,11 @@ jobs:
           package: ./publish
 
       - name: Post-deploy smoke test
+        env:
+          HEALTH_URL: ${{ vars.DEPLOYED_HEALTH_URL || 'https://api.markhazleton.com/api/health' }}
         run: |
           echo "Waiting for app to start..."
           sleep 15
-          curl --fail --max-time 30 https://api.markhazleton.com/api/health || exit 1
+          echo "Checking: $HEALTH_URL"
+          curl --fail --max-time 30 "$HEALTH_URL" || exit 1
           echo "Health check passed"

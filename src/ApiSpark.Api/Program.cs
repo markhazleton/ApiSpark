@@ -15,7 +15,7 @@ builder.WebHost.UseShutdownTimeout(TimeSpan.FromSeconds(15));
 builder.Services.AddApiSparkAuth();
 
 // CORS
-builder.Services.AddApiSparkCors(builder.Configuration);
+builder.Services.AddApiSparkCors(builder.Configuration, builder.Environment);
 
 // Data layer
 builder.Services.AddDbContext<ApiSparkDbContext>(options =>
