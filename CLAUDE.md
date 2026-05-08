@@ -1,4 +1,4 @@
-# Project Guide
+﻿# Project Guide
 
 ## DevSpark Commands
 

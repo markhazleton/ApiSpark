@@ -430,3 +430,18 @@ FodyWeavers.xsd
 
 # DevSpark — personal overrides (never commit)
 .documentation/*/commands/
+
+# ApiSpark — SQLite databases (NEVER commit production or local .db files)
+*.db
+*.db-shm
+*.db-wal
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
+# ApiSpark — deployment artifacts
+publish/
+
+# Ignore new XML solution format (canonical format is .sln)
+*.slnx
+
