@@ -6,8 +6,8 @@
 - **Source Branch**: `001-apispark-foundation`
 - **Target Branch**: `main`
 - **Review Date**: 2026-05-07 17:00:00 UTC
-- **Last Updated**: 2026-05-07 18:00:00 UTC
-- **Reviewed Commit**: `79a5f2e143b827035d5bbd71182f74463f85eb3e`
+- **Last Updated**: 2026-05-07 19:00:00 UTC
+- **Reviewed Commit**: `a448620dbf264ee6b541cb2ae14ce11ae49b07d5`
 - **Reviewer**: devspark.pr-review
 - **Constitution Version**: 1.1.0 (2026-05-06)
 
@@ -17,6 +17,7 @@
 |-----|--------|------|----------|------|--------|-----|-----|--------------|--------|
 | 1 | `79a5f2e` | 2026-05-07 | 0 | 2 | 2 | 2 | 0 | `dotnet test tests/ApiSpark.Api.Tests` | ✅ 27/27 pass |
 | 2 | `b9ec2de` | 2026-05-07 | 0 | 0 | 0 | 0 | 0 | `dotnet test tests/ApiSpark.Api.Tests` | ✅ 37/37 pass |
+| 3 | `a448620` | 2026-05-07 | 0 | 0 | 0 | 0 | 0 | `dotnet test tests/ApiSpark.Api.Tests` | ✅ 37/37 pass |
 
 ## PR Summary
 
@@ -41,17 +42,17 @@
 
 - ✅ **Constitution Compliance**: PASS — all 10 principles checked; Principles I–X satisfied
 - 📋 **Spec Lifecycle**: Complete — spec status = `Complete`
-- 📝 **Task Completion**: 50/50 tasks marked complete (⚠️ one task marked done without the corresponding file — see H-02)
-- 🔒 **Security**: 1 issue (CORS fallback risk — H-01)
-- 📊 **Code Quality**: 2 recommendations (M-01 dead test stub, M-02 hardcoded URL)
-- 🧪 **Testing**: ✅ 27/27 pass — `dotnet test tests/ApiSpark.Api.Tests` (Release build)
+- 📝 **Task Completion**: 50/50 tasks complete
+- 🔒 **Security**: 0 issues — CORS fallback (H-01) resolved; implicit deny in non-Development
+- 📊 **Code Quality**: 0 issues — all recommendations addressed
+- 🧪 **Testing**: ✅ 37/37 pass — `dotnet test tests/ApiSpark.Api.Tests` (Release build)
 - 📝 **Documentation**: PASS — README, 5 ADRs, quickstart.md all updated
 - 🏛️ **Constitution Improvements**: 0 CON findings
 
-**Overall Assessment**: A well-structured foundation PR that correctly establishes the modular ASP.NET Core platform. All 10 constitution principles are satisfied, the spec lifecycle is complete, and 27 tests pass clean. Two HIGH findings need resolution before merge: (1) the CORS fallback silently allows `localhost` origins in production when the `AllowedOrigins` config is unset, and (2) the structured logging test file (T012a) was marked complete in `tasks.md` but was never created — FR-009 has no direct field-by-field test coverage.
+**Overall Assessment**: All 6 Rev 1 findings are resolved. CORS fallback is now environment-aware (implicit deny in Production). FR-009 structured logging is now tested via 11 dedicated assertions covering all 9 required fields. The dead test stub is removed. CI/CD URL is now configurable. Tool manifest is at the standard `.config/` location. `ApiSpark.sln` remains the single canonical solution file. 37 tests pass clean with 0 warnings on a Release build.
 
-**Approval Recommendation**: ⚠️ REQUEST CHANGES
-*Resolve H-01 (CORS fallback) and H-02 (missing logging test) before merging.*
+**Approval Recommendation**: ✅ APPROVE
+*All findings resolved. No new issues introduced. Ready to merge.*
 
 ---
 
@@ -137,22 +138,22 @@ None found.
 
 | ID | Status | Principle | File:Line | Issue | Fix |
 |----|--------|-----------|-----------|-------|-----|
-| H-01 | 🔴 Open | Security by Default (IV) | `src/ApiSpark.Api/Infrastructure/Cors/CorsSetup.cs:15` | When `AllowedOrigins` is empty (default in `appsettings.json`), CORS silently falls back to localhost origins. A production deployment without Azure App Service `AllowedOrigins__N` settings set will block production clients (markhazleton.com etc.) via CORS, or leak the localhost fallback if those origins somehow match a future test client. | Wrap fallback in `if (environment.IsDevelopment())` guard; deny cross-origin when empty in non-dev environments |
-| H-02 | 🔴 Open | Test-First (II) | `tests/ApiSpark.Api.Tests/Infrastructure/Observability/` (missing file) | T012a marked `[X]` complete in tasks.md but `RequestLoggingMiddlewareTests.cs` does not exist. FR-009 requires 9 specific structured fields be captured; no test verifies the fields are actually present in log output. The middleware runs on every test request but field presence is unverified. | Create `RequestLoggingMiddlewareTests.cs` with a captured ILogger sink asserting all 9 FR-009 fields |
+| H-01 | ✅ Resolved | Security by Default (IV) | `src/ApiSpark.Api/Infrastructure/Cors/CorsSetup.cs:15` | When `AllowedOrigins` is empty (default in `appsettings.json`), CORS silently falls back to localhost origins. A production deployment without Azure App Service `AllowedOrigins__N` settings set will block production clients (markhazleton.com etc.) via CORS, or leak the localhost fallback if those origins somehow match a future test client. | Wrap fallback in `if (environment.IsDevelopment())` guard; deny cross-origin when empty in non-dev environments |
+| H-02 | ✅ Resolved | Test-First (II) | `tests/ApiSpark.Api.Tests/Infrastructure/Observability/` (missing file) | T012a marked `[X]` complete in tasks.md but `RequestLoggingMiddlewareTests.cs` does not exist. FR-009 requires 9 specific structured fields be captured; no test verifies the fields are actually present in log output. The middleware runs on every test request but field presence is unverified. | Create `RequestLoggingMiddlewareTests.cs` with a captured ILogger sink asserting all 9 FR-009 fields |
 
 ### Medium Priority Suggestions
 
 | ID | Status | Principle | File:Line | Issue | Recommendation |
 |----|--------|-----------|-----------|-------|----------------|
-| M-01 | 🔴 Open | Simplicity (III) | `tests/ApiSpark.Api.Tests/UnitTest1.cs:6` | Empty auto-generated test `Test1()` committed; trivially passes and adds noise | Delete file or replace with a genuinely useful smoke test |
-| M-02 | 🔴 Open | Simplicity (III) | `.github/workflows/deploy.yml:44` | Post-deploy smoke test hardcodes `https://api.markhazleton.com/api/health`; breaks for staging environments | Extract to `${{ vars.DEPLOYED_HEALTH_URL }}` GitHub Actions variable |
+| M-01 | ✅ Resolved | Simplicity (III) | `tests/ApiSpark.Api.Tests/UnitTest1.cs:6` | Empty auto-generated test `Test1()` committed; trivially passes and adds noise | Delete file or replace with a genuinely useful smoke test |
+| M-02 | ✅ Resolved | Simplicity (III) | `.github/workflows/deploy.yml:44` | Post-deploy smoke test hardcodes `https://api.markhazleton.com/api/health`; breaks for staging environments | Extract to `${{ vars.DEPLOYED_HEALTH_URL }}` GitHub Actions variable |
 
 ### Low Priority Improvements
 
 | ID | Status | Principle | File:Line | Issue | Recommendation |
 |----|--------|-----------|-----------|-------|----------------|
-| L-01 | 🔴 Open | Simplicity (III) | `dotnet-tools.json:1` | Tool manifest at root instead of `.config/dotnet-tools.json` | Move to `.config/dotnet-tools.json` to follow dotnet convention |
-| L-02 | 🔴 Open | Simplicity (III) | `ApiSpark.slnx` | Both `.sln` and `.slnx` solution formats may coexist | Keep one canonical format; `.gitignore` the other or document which is primary |
+| L-01 | ✅ Resolved | Simplicity (III) | `dotnet-tools.json:1` | Tool manifest at root instead of `.config/dotnet-tools.json` | Move to `.config/dotnet-tools.json` to follow dotnet convention |
+| L-02 | ✅ Resolved | Simplicity (III) | `ApiSpark.slnx` | Both `.sln` and `.slnx` solution formats may coexist | Keep one canonical format; `.gitignore` the other or document which is primary |
 
 ### Constitution Improvements
 
@@ -276,15 +277,20 @@ None detected. This is a greenfield PR — no existing behavior was modified.
 
 ## Approval Decision
 
-**Recommendation**: ⚠️ REQUEST CHANGES
+**Recommendation**: ✅ APPROVE
 
 **Reasoning**:
-- H-01 (CORS localhost fallback) is a latent production risk: if `AllowedOrigins` Azure App Service settings are not configured at deploy time, production clients will be blocked by CORS. The fix is a one-line guard clause.
-- H-02 (missing T012a test file) violates Constitution Principle II (Test-First, NON-NEGOTIABLE): a task was marked complete without creating the required test. FR-009 structured logging field requirements have no direct test assertion.
-- Both HIGH findings have clear, low-effort fixes (< 30 minutes each).
-- All 10 constitution principles otherwise pass; the spec is Complete; 27 tests pass clean.
+All 6 Rev 1 findings resolved in commit `b9ec2de` (code) + `a448620` (review file), with commit isolation enforced:
+- H-01 fixed: CORS guard clause is environment-aware; localhost fallback is Development-only.
+- H-02 fixed: 11 new tests assert all 9 FR-009 structured log fields; 37/37 pass.
+- M-01 fixed: empty scaffolding stub deleted.
+- M-02 fixed: deploy URL is now a configurable GitHub Actions variable.
+- L-01 fixed: tool manifest at standard `.config/dotnet-tools.json`.
+- L-02 fixed: `ApiSpark.slnx` removed; `*.slnx` in `.gitignore`; `ApiSpark.sln` is canonical.
 
-**Estimated Rework Time**: ~1–2 hours to implement both fixes and add the missing test file.
+No new findings introduced. Constitution fully aligned. Spec Complete. Ready to merge.
+
+**Estimated Rework Time**: N/A — no outstanding issues.
 
 ```yaml
 findings:
@@ -293,48 +299,48 @@ findings:
     description: "CORS setup falls back to localhost:5173/3000 when AllowedOrigins config is empty. In production without Azure App Service CORS settings configured, production client origins will be blocked by CORS while localhost is silently allowed."
     recommended_action: "Wrap localhost fallback in environment.IsDevelopment() guard. Add IWebHostEnvironment parameter to AddApiSparkCors(). When origins are empty in non-Development, apply no cross-origin policy (implicit deny)."
     execution_mode: auto
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "Fixed in b9ec2de — see Revision Log Rev 2"
 
   - finding_id: pr1-H-02
     severity: high
     description: "tasks.md marks T012a (RequestLoggingMiddlewareTests.cs) as [X] complete but the file does not exist. FR-009 requires 9 structured log fields; none are verified by a test. Constitution Principle II (Test-First, NON-NEGOTIABLE) is violated."
     recommended_action: "Create tests/ApiSpark.Api.Tests/Infrastructure/Observability/RequestLoggingMiddlewareTests.cs with a captured ILogger sink asserting Method, RequestPath, StatusCode, DurationMs, CorrelationId, FeatureName, OperationName, Success fields are present in logged output."
     execution_mode: selective
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "Fixed in b9ec2de — see Revision Log Rev 2"
 
   - finding_id: pr1-M-01
     severity: medium
     description: "UnitTest1.cs committed as auto-generated xUnit scaffolding with empty Test1() body. Dead code that trivially passes and misleads reviewers about test quality."
     recommended_action: "Delete tests/ApiSpark.Api.Tests/UnitTest1.cs."
     execution_mode: auto
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "Fixed in b9ec2de — see Revision Log Rev 2"
 
   - finding_id: pr1-M-02
     severity: medium
     description: "deploy.yml hardcodes https://api.markhazleton.com/api/health in the post-deploy smoke test. Breaks for staging or preview environment deployments."
     recommended_action: "Replace hardcoded URL with ${{ vars.DEPLOYED_HEALTH_URL }} GitHub Actions variable."
     execution_mode: auto
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "Fixed in b9ec2de — see Revision Log Rev 2"
 
   - finding_id: pr1-L-01
     severity: low
     description: "Tool manifest at repository root (dotnet-tools.json) instead of standard .config/dotnet-tools.json location."
     recommended_action: "Move to .config/dotnet-tools.json to follow dotnet SDK convention."
     execution_mode: auto
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "Fixed in b9ec2de — see Revision Log Rev 2"
 
   - finding_id: pr1-L-02
     severity: low
     description: "ApiSpark.slnx (new XML format) committed; may coexist with ApiSpark.sln causing ambiguity about canonical solution file."
     recommended_action: "Keep one canonical format. .gitignore the other or document which is primary in README."
     execution_mode: manual
-    status: open
-    outcome: ""
+    status: resolved
+    outcome: "Fixed in b9ec2de — see Revision Log Rev 2"
 ```
 
 ---
