@@ -6,6 +6,7 @@ using ApiSpark.Api.Infrastructure.Data;
 using ApiSpark.Api.Infrastructure.Data.Repositories;
 using ApiSpark.Api.Infrastructure.Observability;
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,12 +25,8 @@ builder.Services.AddDbContext<ApiSparkDbContext>(options =>
 builder.Services.AddScoped<IContentRepository, ContentRepository>();
 builder.Services.AddScoped<ContentService>();
 
-// Swagger (dev only)
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new() { Title = "ApiSpark API", Version = "v1" });
-});
+// OpenAPI / Scalar (dev only)
+builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
@@ -41,8 +38,8 @@ app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();                // /openapi/v1.json
+    app.MapScalarApiReference();     // /scalar/v1
 }
 
 // Route groups

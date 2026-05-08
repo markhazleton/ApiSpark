@@ -87,12 +87,15 @@ curl http://localhost:5000/api/public/content/tags
 
 ---
 
-## 5. Browse Swagger UI
+## 5. Browse API Documentation (Scalar)
 
-Open in browser: `http://localhost:5000/swagger`
+Open in browser: `http://localhost:5000/scalar/v1`
 
-All registered endpoints appear in the interactive documentation.
-Swagger UI is only available in the Development environment.
+Scalar is the modern replacement for Swagger UI used in .NET 10 projects.
+All registered endpoints appear with interactive try-it-out, code snippets (C#, curl, Python), and dark mode.
+The raw OpenAPI 3.1 JSON spec is available at `http://localhost:5000/openapi/v1.json`.
+
+Both endpoints are only available in the Development environment.
 
 ---
 
@@ -177,7 +180,7 @@ The `data/` directory is in `.gitignore`. Do not commit the `.db` file.
 |---------|-------|-----|
 | `Cannot open database` | `./data/` directory missing | The app creates it; ensure write permission on the project directory |
 | `Table already exists` error | Migrations ran against a pre-existing schema | Delete `./data/apispark.local.db` and restart |
-| Swagger UI not visible | Running in Production environment | Set `ASPNETCORE_ENVIRONMENT=Development` |
+| Scalar UI not visible (`/scalar/v1` returns 404) | Running in Production environment | Set `ASPNETCORE_ENVIRONMENT=Development` |
 | All endpoints return 404 | Project not started or wrong port | Check console output for the listening URL |
 | Admin routes return 200 (unexpected) | Auth middleware not configured | Verify `AuthorizationSetup.cs` is registered in `Program.cs` |
 

@@ -29,9 +29,9 @@ public class LocalSetupTests(ApiSparkWebApplicationFactory factory)
     }
 
     [Fact]
-    public async Task SwaggerEndpoint_Responds()
+    public async Task ScalarUiEndpoint_Responds()
     {
-        var response = await _client.GetAsync("/swagger/index.html");
+        var response = await _client.GetAsync("/scalar/v1");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 }
