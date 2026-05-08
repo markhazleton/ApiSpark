@@ -41,7 +41,9 @@ public static class DatabaseSetup
             try
             {
                 await db.Database.MigrateAsync(cancellationToken);
-                logger.LogInformation("Database migrations applied successfully");
+                // WAL mode must be set via PRAGMA — not a valid Microsoft.Data.Sqlite connection string keyword
+                await db.Database.ExecuteSqlRawAsync("PRAGMA journal_mode=WAL;", cancellationToken);
+                logger.LogInformation("Database migrations applied and WAL mode enabled");
             }
             catch (Exception ex)
             {
