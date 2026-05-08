@@ -442,6 +442,6 @@ data/*.db-wal
 # ApiSpark — deployment artifacts
 publish/
 
-# Ignore new XML solution format (canonical format is .sln)
-*.slnx
+# ApiSpark uses .slnx format (default for .NET 10 dotnet new sln)
+# Do NOT add *.slnx here — it is the canonical solution file
 
