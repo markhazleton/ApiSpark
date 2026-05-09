@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/ApiSpark.Api/ApiSpark.Api.csproj" />
+    <Project Path="src/WebSpark.Core/WebSpark.Core.csproj" />
     <Project Path="src/WebSpark.Recipe/WebSpark.Recipe.csproj" />
   </Folder>
   <Folder Name="/tests/">

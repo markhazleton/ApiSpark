@@ -1,6 +1,7 @@
 using ApiSpark.Api.Features.Health;
 using ApiSpark.Api.Features.PublicContent;
 using ApiSpark.Api.Features.Recipe;
+using ApiSpark.Api.Features.WebSpark;
 using ApiSpark.Api.Infrastructure.Auth;
 using ApiSpark.Api.Infrastructure.Cors;
 using ApiSpark.Api.Infrastructure.Data;
@@ -8,6 +9,7 @@ using ApiSpark.Api.Infrastructure.Data.Repositories;
 using ApiSpark.Api.Infrastructure.Observability;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using WebSpark.Core.Data;
 using WebSpark.Recipe.Data;
 using WebSpark.Recipe.Interfaces;
 using WebSpark.Recipe.Providers;
@@ -35,6 +37,12 @@ builder.Services.AddDbContext<RecipeDbContext>(options =>
 builder.Services.AddScoped<IRecipeService, RecipeProvider>();
 builder.Services.AddScoped<RecipeService>();
 
+// WebSpark.Core data layer
+builder.Services.AddDbContext<WebSparkDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("WebSparkConnection"))
+           .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
+builder.Services.AddScoped<WebSparkService>();
+
 // OpenAPI / Scalar (dev only)
 builder.Services.AddOpenApi();
 
@@ -56,10 +64,12 @@ if (app.Environment.IsDevelopment())
 var publicApi = app.MapGroup("/api/public");
 publicApi.MapPublicContentApi();
 publicApi.MapPublicRecipeApi();
+publicApi.MapGroup("/webspark").MapPublicWebSparkApi();
 
 var adminApi = app.MapGroup("/api/admin")
     .RequireAuthorization("AdminOnly");
 adminApi.MapAdminHealthApi();
+adminApi.MapGroup("/webspark").MapAdminWebSparkApi();
 
 var publishApi = app.MapGroup("/api/publish").RequireAuthorization("Publisher");
 publishApi.MapPublishRecipeApi();
