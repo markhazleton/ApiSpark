@@ -1,5 +1,6 @@
 using ApiSpark.Api.Features.Health;
 using ApiSpark.Api.Features.PublicContent;
+using ApiSpark.Api.Features.Recipe;
 using ApiSpark.Api.Infrastructure.Auth;
 using ApiSpark.Api.Infrastructure.Cors;
 using ApiSpark.Api.Infrastructure.Data;
@@ -7,6 +8,9 @@ using ApiSpark.Api.Infrastructure.Data.Repositories;
 using ApiSpark.Api.Infrastructure.Observability;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using WebSpark.Recipe.Data;
+using WebSpark.Recipe.Interfaces;
+using WebSpark.Recipe.Providers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +28,12 @@ builder.Services.AddDbContext<ApiSparkDbContext>(options =>
 
 builder.Services.AddScoped<IContentRepository, ContentRepository>();
 builder.Services.AddScoped<ContentService>();
+
+// Recipe data layer
+builder.Services.AddDbContext<RecipeDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("RecipeConnection")));
+builder.Services.AddScoped<IRecipeService, RecipeProvider>();
+builder.Services.AddScoped<RecipeService>();
 
 // OpenAPI / Scalar (dev only)
 builder.Services.AddOpenApi();
@@ -45,12 +55,15 @@ if (app.Environment.IsDevelopment())
 // Route groups
 var publicApi = app.MapGroup("/api/public");
 publicApi.MapPublicContentApi();
+publicApi.MapPublicRecipeApi();
 
 var adminApi = app.MapGroup("/api/admin")
     .RequireAuthorization("AdminOnly");
 adminApi.MapAdminHealthApi();
 
-app.MapGroup("/api/publish").RequireAuthorization("Publisher");
+var publishApi = app.MapGroup("/api/publish").RequireAuthorization("Publisher");
+publishApi.MapPublishRecipeApi();
+
 app.MapGroup("/api/integrations").RequireAuthorization("ServiceOrAdmin");
 
 // Health

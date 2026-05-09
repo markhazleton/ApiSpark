@@ -1,5 +1,6 @@
 using ApiSpark.Api.Infrastructure.Data.Seed;
 using Microsoft.EntityFrameworkCore;
+using WebSpark.Recipe.Data;
 
 namespace ApiSpark.Api.Infrastructure.Data;
 
@@ -48,6 +49,20 @@ public static class DatabaseSetup
             catch (Exception ex)
             {
                 logger.LogCritical(ex, "Database migration failed — aborting startup");
+                throw;
+            }
+
+            using var recipeScope = app.Services.CreateScope();
+            var recipeDb = recipeScope.ServiceProvider.GetRequiredService<RecipeDbContext>();
+            try
+            {
+                await recipeDb.Database.MigrateAsync(cancellationToken);
+                await recipeDb.Database.ExecuteSqlRawAsync("PRAGMA journal_mode=WAL;", cancellationToken);
+                logger.LogInformation("Recipe database migrations applied");
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical(ex, "Recipe database migration failed — aborting startup");
                 throw;
             }
         }
