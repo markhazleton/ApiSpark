@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="MakeBoldSpark — API hub for Make Bold Solutions and Mark Hazleton projects. Modular ASP.NET Core API platform hosting Recipe, WebSpark, and Public Content APIs." />
+  <title>MakeBoldSpark — API Platform</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand: #1a56db;
+      --brand-dark: #1e40af;
+      --surface: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 0.5rem;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--surface);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: var(--brand);
+      color: #fff;
+      padding: 3rem 1.5rem 2.5rem;
+      text-align: center;
+    }
+
+    header h1 { font-size: 2.5rem; font-weight: 800; letter-spacing: -0.02em; }
+    header p  { margin-top: 0.75rem; font-size: 1.125rem; opacity: 0.9; max-width: 52ch; margin-inline: auto; }
+
+    main {
+      flex: 1;
+      max-width: 64rem;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+      width: 100%;
+    }
+
+    .section-title {
+      font-size: 1.375rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .api-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 3rem;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgb(0 0 0 / .06);
+    }
+
+    .card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.35rem; }
+    .card .route {
+      font-family: ui-monospace, "Cascadia Code", monospace;
+      font-size: 0.8rem;
+      color: var(--brand);
+      background: #eff6ff;
+      padding: 0.15rem 0.45rem;
+      border-radius: 0.25rem;
+      display: inline-block;
+      margin-bottom: 0.6rem;
+    }
+    .card p { font-size: 0.9rem; color: var(--muted); }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      margin-top: 0.75rem;
+    }
+    .badge-open  { background: #dcfce7; color: #15803d; }
+    .badge-auth  { background: #fef9c3; color: #854d0e; }
+
+    .links-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.6rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: var(--brand); color: #fff; }
+    .btn-outline { background: transparent; border: 2px solid var(--brand); color: var(--brand); }
+
+    footer {
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      padding: 1.5rem;
+      text-align: center;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+
+    footer a { color: var(--brand); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+    footer p + p { margin-top: 0.4rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>MakeBoldSpark</h1>
+  <p>API platform for Make Bold Solutions and Mark Hazleton projects — modular, low-cost, Azure-hosted.</p>
+</header>
+
+<main>
+
+  <h2 class="section-title">Available APIs</h2>
+
+  <div class="api-grid">
+
+    <div class="card">
+      <h3>Public Content</h3>
+      <span class="route">/api/public</span>
+      <p>Read-only content endpoints powering static sites and SPAs in the MakeBoldSpark portfolio.</p>
+      <span class="badge badge-open">&#x2713; Open</span>
+    </div>
+
+    <div class="card">
+      <h3>Recipe API</h3>
+      <span class="route">/api/public/recipes</span>
+      <p>Structured recipe data — ingredients, instructions, and metadata — served as clean JSON.</p>
+      <span class="badge badge-open">&#x2713; Open</span>
+    </div>
+
+    <div class="card">
+      <h3>WebSpark API</h3>
+      <span class="route">/api/public/webspark</span>
+      <p>Content and configuration data for WebSpark-powered sites across the portfolio.</p>
+      <span class="badge badge-open">&#x2713; Open</span>
+    </div>
+
+    <div class="card">
+      <h3>Health Check</h3>
+      <span class="route">/api/health</span>
+      <p>Shallow health probe for uptime monitoring and Azure App Service health checks.</p>
+      <span class="badge badge-open">&#x2713; Open</span>
+    </div>
+
+    <div class="card">
+      <h3>Admin API</h3>
+      <span class="route">/api/admin</span>
+      <p>Authenticated CMS and administration endpoints. Requires the Admin role.</p>
+      <span class="badge badge-auth">&#x1F512; Auth required</span>
+    </div>
+
+    <div class="card">
+      <h3>Publish API</h3>
+      <span class="route">/api/publish</span>
+      <p>Authenticated publishing and static-export endpoints. Requires the Publisher role.</p>
+      <span class="badge badge-auth">&#x1F512; Auth required</span>
+    </div>
+
+  </div>
+
+  <h2 class="section-title">Resources</h2>
+
+  <div class="links-row">
+    <a class="btn btn-primary" href="/scalar/v1">API Reference (Scalar)</a>
+    <a class="btn btn-outline" href="https://makeboldspark.com">MakeBoldSpark Home</a>
+    <a class="btn btn-outline" href="https://markhazleton.com">Mark Hazleton</a>
+    <a class="btn btn-outline" href="https://github.com/MarkHazleton/ApiSpark">GitHub</a>
+  </div>
+
+  <h2 class="section-title">About</h2>
+  <p style="max-width:64ch; color: var(--muted); font-size:0.95rem;">
+    MakeBoldSpark consolidates multiple low-volume APIs into a single, cost-effective ASP.NET Core
+    application backed by EF Core and SQLite, deployed on Azure App Service Linux. It is part of the
+    migration of all Spark projects to the <strong>makeboldspark.com</strong> domain and serves as the
+    shared API layer for Make Bold Solutions and Mark Hazleton portfolio sites.
+  </p>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://makeboldspark.com">MakeBoldSpark</a> —
+    built by <a href="https://markhazleton.com">Mark Hazleton</a> ·
+    <a href="https://makeboldsolutions.com">MakeBoldSolutions</a>
+  </p>
+  <p>Source: <a href="https://github.com/MarkHazleton/ApiSpark">github.com/MarkHazleton/ApiSpark</a></p>
+</footer>
+
+</body>
+</html>

@@ -1,6 +1,15 @@
-# ApiSpark
+# MakeBoldSpark
 
-ApiSpark is a modular ASP.NET Core backend API platform for small personal and portfolio APIs. It is designed to consolidate low-volume APIs into a single Azure-hosted backend while keeping public websites static-first and inexpensive.
+**Live Site**: [makeboldspark.com](https://makeboldspark.com)
+
+MakeBoldSpark is a modular ASP.NET Core backend API platform that consolidates personal and portfolio APIs into a single Azure-hosted backend. It is the API home for Make Bold Solutions and Mark Hazleton projects, keeping public websites static-first while centralizing all API services.
+
+## About
+
+MakeBoldSpark demonstrates how to host multiple low-volume APIs in a single, cost-effective ASP.NET Core application backed by EF Core and SQLite. The platform serves as the API layer for static sites and SPAs in the [MakeBoldSpark](https://makeboldspark.com) portfolio.
+
+> Built by [Mark Hazleton](https://markhazleton.com) — Technical Solutions Architect
+> Part of the [MakeBoldSpark](https://makeboldspark.com) portfolio of technical demonstrations.
 
 ## Goals
 

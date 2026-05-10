@@ -1,0 +1,292 @@
+openapi: "3.0.3"
+info:
+  title: ApiSpark – Recipe API
+  version: "1.0.0"
+  description: Public and publisher-gated endpoints for the WebSpark Recipe domain.
+
+servers:
+  - url: https://api.markhazleton.com
+    description: Production
+
+tags:
+  - name: Recipes
+    description: Recipe catalog operations
+  - name: RecipeCategories
+    description: Recipe category operations
+
+paths:
+
+  /api/public/recipes:
+    get:
+      operationId: GetApprovedRecipes
+      summary: List all approved recipes
+      tags: [Recipes]
+      security: []
+      responses:
+        "200":
+          description: Array of approved recipe models
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RecipeModel'
+
+  /api/public/recipes/{id}:
+    get:
+      operationId: GetRecipeById
+      summary: Get a recipe by ID
+      tags: [Recipes]
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Recipe found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeModel'
+        "404":
+          description: Recipe not found
+
+  /api/public/recipes/categories:
+    get:
+      operationId: GetRecipeCategories
+      summary: List all recipe categories
+      tags: [RecipeCategories]
+      security: []
+      responses:
+        "200":
+          description: Array of recipe categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RecipeCategoryModel'
+
+  /api/publish/recipes:
+    post:
+      operationId: CreateRecipe
+      summary: Create a new recipe
+      tags: [Recipes]
+      security:
+        - publisherAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeModel'
+      responses:
+        "201":
+          description: Recipe created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeModel'
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden – Publisher role required
+
+  /api/publish/recipes/{id}:
+    put:
+      operationId: UpdateRecipe
+      summary: Update an existing recipe
+      tags: [Recipes]
+      security:
+        - publisherAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeModel'
+      responses:
+        "200":
+          description: Recipe updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeModel'
+        "404":
+          description: Recipe not found
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+    delete:
+      operationId: DeleteRecipe
+      summary: Delete a recipe
+      tags: [Recipes]
+      security:
+        - publisherAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Recipe deleted
+        "404":
+          description: Recipe not found
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+
+  /api/publish/recipes/categories:
+    post:
+      operationId: CreateRecipeCategory
+      summary: Create a recipe category
+      tags: [RecipeCategories]
+      security:
+        - publisherAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeCategoryModel'
+      responses:
+        "201":
+          description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeCategoryModel'
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+
+  /api/publish/recipes/categories/{id}:
+    put:
+      operationId: UpdateRecipeCategory
+      summary: Update a recipe category
+      tags: [RecipeCategories]
+      security:
+        - publisherAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeCategoryModel'
+      responses:
+        "200":
+          description: Category updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeCategoryModel'
+        "404":
+          description: Category not found
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+    delete:
+      operationId: DeleteRecipeCategory
+      summary: Delete a recipe category
+      tags: [RecipeCategories]
+      security:
+        - publisherAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Category deleted
+        "404":
+          description: Category not found
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+
+components:
+  securitySchemes:
+    publisherAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Requires Publisher or Admin role
+
+  schemas:
+    RecipeModel:
+      type: object
+      required: [name, ingredients, instructions, authorName, recipeCategoryId]
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        description:
+          type: string
+          maxLength: 500
+        ingredients:
+          type: string
+        instructions:
+          type: string
+        authorName:
+          type: string
+          maxLength: 50
+        keywords:
+          type: string
+          maxLength: 100
+        isApproved:
+          type: boolean
+        recipeCategoryId:
+          type: integer
+        domainId:
+          type: integer
+        createdDate:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedDate:
+          type: string
+          format: date-time
+          readOnly: true
+
+    RecipeCategoryModel:
+      type: object
+      required: [name]
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 70
+        comment:
+          type: string
+          maxLength: 1500
+        domainId:
+          type: integer

@@ -10,24 +10,41 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using WebSpark.Core.Data;
+using WebSpark.Recipe.Data;
 
 namespace ApiSpark.Api.Tests.Infrastructure;
 
 public class ApiSparkWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private SqliteConnection? _connection;
-    private readonly string _dbName = $"TestDb_{Guid.NewGuid():N}";
+    private SqliteConnection? _recipeConnection;
+    private SqliteConnection? _webSparkConnection;
+
+    private readonly string _dbName        = $"TestDb_{Guid.NewGuid():N}";
+    private readonly string _recipeDbName  = $"RecipeTestDb_{Guid.NewGuid():N}";
+    private readonly string _webSparkDbName = $"WebSparkTestDb_{Guid.NewGuid():N}";
 
     public async Task InitializeAsync()
     {
         _connection = new SqliteConnection($"Data Source={_dbName};Mode=Memory;Cache=Shared;");
         await _connection.OpenAsync();
+
+        _recipeConnection = new SqliteConnection($"Data Source={_recipeDbName};Mode=Memory;Cache=Shared;");
+        await _recipeConnection.OpenAsync();
+
+        _webSparkConnection = new SqliteConnection($"Data Source={_webSparkDbName};Mode=Memory;Cache=Shared;");
+        await _webSparkConnection.OpenAsync();
     }
 
     public new async Task DisposeAsync()
     {
         if (_connection is not null)
             await _connection.DisposeAsync();
+        if (_recipeConnection is not null)
+            await _recipeConnection.DisposeAsync();
+        if (_webSparkConnection is not null)
+            await _webSparkConnection.DisposeAsync();
         await base.DisposeAsync();
     }
 
@@ -35,26 +52,40 @@ public class ApiSparkWebApplicationFactory : WebApplicationFactory<Program>, IAs
     {
         builder.UseEnvironment("Development");
 
-        // Override connection string in configuration so DatabaseSetup reads the test DB path,
-        // preventing the path-writability check from running against ./data on developer machines
+        // DatabaseSetup detects Mode=Memory and uses EnsureCreated() instead of MigrateAsync()
+        // for Recipe and WebSpark contexts, bypassing the legacy migration history bugs.
         builder.ConfigureAppConfiguration((_, config) =>
         {
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["ConnectionStrings:DefaultConnection"] = $"Data Source={_dbName};Mode=Memory;Cache=Shared;",
-                ["Database:ApplyMigrationsOnStartup"] = "true",
-                ["Database:SeedOnStartup"] = "true"
+                ["ConnectionStrings:DefaultConnection"]  = $"Data Source={_dbName};Mode=Memory;Cache=Shared;",
+                ["ConnectionStrings:RecipeConnection"]   = $"Data Source={_recipeDbName};Mode=Memory;Cache=Shared;",
+                ["ConnectionStrings:WebSparkConnection"] = $"Data Source={_webSparkDbName};Mode=Memory;Cache=Shared;",
+                ["Database:ApplyMigrationsOnStartup"]    = "true",
+                ["Database:SeedOnStartup"]               = "true"
             });
         });
 
         builder.ConfigureServices(services =>
         {
-            // Replace DB context with shared in-memory SQLite
+            // Replace ApiSparkDbContext
             var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<ApiSparkDbContext>));
             if (descriptor is not null) services.Remove(descriptor);
-
             services.AddDbContext<ApiSparkDbContext>(options =>
                 options.UseSqlite($"Data Source={_dbName};Mode=Memory;Cache=Shared;"));
+
+            // Replace RecipeDbContext with its own in-memory database
+            var recipeDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<RecipeDbContext>));
+            if (recipeDescriptor is not null) services.Remove(recipeDescriptor);
+            services.AddDbContext<RecipeDbContext>(options =>
+                options.UseSqlite($"Data Source={_recipeDbName};Mode=Memory;Cache=Shared;"));
+
+            // Replace WebSparkDbContext with its own in-memory database
+            var webSparkDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<WebSparkDbContext>));
+            if (webSparkDescriptor is not null) services.Remove(webSparkDescriptor);
+            services.AddDbContext<WebSparkDbContext>(options =>
+                options.UseSqlite($"Data Source={_webSparkDbName};Mode=Memory;Cache=Shared;")
+                       .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 
             // Replace JWT Bearer with test auth handler
             services.AddAuthentication("TestScheme")

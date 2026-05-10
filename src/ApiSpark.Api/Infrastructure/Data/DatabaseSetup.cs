@@ -55,29 +55,47 @@ public static class DatabaseSetup
 
             using var recipeScope = app.Services.CreateScope();
             var recipeDb = recipeScope.ServiceProvider.GetRequiredService<RecipeDbContext>();
+            var recipeConnStr = config.GetConnectionString("RecipeConnection") ?? "";
             try
             {
-                await recipeDb.Database.MigrateAsync(cancellationToken);
-                await recipeDb.Database.ExecuteSqlRawAsync("PRAGMA journal_mode=WAL;", cancellationToken);
-                logger.LogInformation("Recipe database migrations applied");
+                if (IsInMemory(recipeConnStr))
+                {
+                    await recipeDb.Database.EnsureCreatedAsync(cancellationToken);
+                    logger.LogInformation("Recipe database schema created (in-memory)");
+                }
+                else
+                {
+                    await recipeDb.Database.MigrateAsync(cancellationToken);
+                    await recipeDb.Database.ExecuteSqlRawAsync("PRAGMA journal_mode=WAL;", cancellationToken);
+                    logger.LogInformation("Recipe database migrations applied");
+                }
             }
             catch (Exception ex)
             {
-                logger.LogCritical(ex, "Recipe database migration failed — aborting startup");
+                logger.LogCritical(ex, "Recipe database initialization failed — aborting startup");
                 throw;
             }
 
             using var webSparkScope = app.Services.CreateScope();
             var webSparkDb = webSparkScope.ServiceProvider.GetRequiredService<WebSparkDbContext>();
+            var webSparkConnStr = config.GetConnectionString("WebSparkConnection") ?? "";
             try
             {
-                await webSparkDb.Database.MigrateAsync(cancellationToken);
-                await webSparkDb.Database.ExecuteSqlRawAsync("PRAGMA journal_mode=WAL;", cancellationToken);
-                logger.LogInformation("WebSpark database migrations applied");
+                if (IsInMemory(webSparkConnStr))
+                {
+                    await webSparkDb.Database.EnsureCreatedAsync(cancellationToken);
+                    logger.LogInformation("WebSpark database schema created (in-memory)");
+                }
+                else
+                {
+                    await webSparkDb.Database.MigrateAsync(cancellationToken);
+                    await webSparkDb.Database.ExecuteSqlRawAsync("PRAGMA journal_mode=WAL;", cancellationToken);
+                    logger.LogInformation("WebSpark database migrations applied");
+                }
             }
             catch (Exception ex)
             {
-                logger.LogCritical(ex, "WebSpark database migration failed — aborting startup");
+                logger.LogCritical(ex, "WebSpark database initialization failed — aborting startup");
                 throw;
             }
         }
@@ -102,4 +120,8 @@ public static class DatabaseSetup
         }
         return string.Empty;
     }
+
+    private static bool IsInMemory(string connStr)
+        => connStr.Contains("Mode=Memory", StringComparison.OrdinalIgnoreCase)
+        || connStr.Contains(":memory:", StringComparison.OrdinalIgnoreCase);
 }

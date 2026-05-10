@@ -51,6 +51,8 @@ var app = builder.Build();
 // Middleware pipeline
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseCors(CorsSetup.PolicyName);
+app.UseDefaultFiles();   // serves wwwroot/index.html at "/"
+app.UseStaticFiles();    // serves wwwroot/**
 app.UseAuthentication();
 app.UseAuthorization();
 

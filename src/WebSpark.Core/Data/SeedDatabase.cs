@@ -198,7 +198,7 @@ public class SeedDatabase : IDisposable
             {
                 Id = 1,
                 Email = "mark@frogsfolly.com",
-                Password = "Kn+NlXX9cqOYrb1WMptB5pf51Vb/FuumI1kHbxXSivA=",
+                Password = string.Empty,
                 DisplayName = "Mark Hazleton",
                 Bio = "Solutions Architect, lifelong learner, passionate for solutions which make technology work for business, not sidetracked by sizzle",
                 Avatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 250 250' width='250' height='250'%3E%3Crect width='250' height='250' fill='%23622aff'%3E%3C/rect%3E%3Ctext x='50%' y='53%' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='128px' fill='%23ffffff'%3EM%3C/text%3E%3C/svg%3E",
