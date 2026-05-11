@@ -3,15 +3,35 @@ using WebSpark.Core.Data;
 
 namespace ApiSpark.Api.Features.WebSpark;
 
-public class WebSparkService(WebSparkDbContext db)
+public class WebSparkService(WebSparkDbContext db, ILogger<WebSparkService> logger)
 {
+    private async Task<List<T>> SafeListAsync<T>(Func<Task<List<T>>> query, string entity)
+    {
+        try { return await query(); }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to query {Entity} — returning empty list", entity);
+            return [];
+        }
+    }
+
+    private async Task<T?> SafeSingleAsync<T>(Func<Task<T?>> query, string entity) where T : class
+    {
+        try { return await query(); }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to query {Entity} — returning null", entity);
+            return null;
+        }
+    }
+
     // ── Domain (WebSite) ────────────────────────────────────────────────────
 
-    public async Task<List<WebSite>> GetDomainsAsync(CancellationToken ct = default)
-        => await db.Domain.OrderBy(d => d.Name).ToListAsync(ct);
+    public Task<List<WebSite>> GetDomainsAsync(CancellationToken ct = default)
+        => SafeListAsync(() => db.Domain.OrderBy(d => d.Name).ToListAsync(ct), "Domain");
 
-    public async Task<WebSite?> GetDomainAsync(int id, CancellationToken ct = default)
-        => await db.Domain.FindAsync([id], ct);
+    public Task<WebSite?> GetDomainAsync(int id, CancellationToken ct = default)
+        => SafeSingleAsync(async () => await db.Domain.FindAsync([id], ct), "Domain");
 
     public async Task<WebSite> CreateDomainAsync(WebSite entity, CancellationToken ct = default)
     {
@@ -41,11 +61,11 @@ public class WebSparkService(WebSparkDbContext db)
 
     // ── Blogs ───────────────────────────────────────────────────────────────
 
-    public async Task<List<Blog>> GetBlogsAsync(CancellationToken ct = default)
-        => await db.Blogs.OrderBy(b => b.Title).ToListAsync(ct);
+    public Task<List<Blog>> GetBlogsAsync(CancellationToken ct = default)
+        => SafeListAsync(() => db.Blogs.OrderBy(b => b.Title).ToListAsync(ct), "Blog");
 
-    public async Task<Blog?> GetBlogAsync(int id, CancellationToken ct = default)
-        => await db.Blogs.FindAsync([id], ct);
+    public Task<Blog?> GetBlogAsync(int id, CancellationToken ct = default)
+        => SafeSingleAsync(async () => await db.Blogs.FindAsync([id], ct), "Blog");
 
     public async Task<Blog> CreateBlogAsync(Blog entity, CancellationToken ct = default)
     {
@@ -75,11 +95,11 @@ public class WebSparkService(WebSparkDbContext db)
 
     // ── Authors ─────────────────────────────────────────────────────────────
 
-    public async Task<List<Author>> GetAuthorsAsync(CancellationToken ct = default)
-        => await db.Authors.OrderBy(a => a.DisplayName).ToListAsync(ct);
+    public Task<List<Author>> GetAuthorsAsync(CancellationToken ct = default)
+        => SafeListAsync(() => db.Authors.OrderBy(a => a.DisplayName).ToListAsync(ct), "Author");
 
-    public async Task<Author?> GetAuthorAsync(int id, CancellationToken ct = default)
-        => await db.Authors.FindAsync([id], ct);
+    public Task<Author?> GetAuthorAsync(int id, CancellationToken ct = default)
+        => SafeSingleAsync(async () => await db.Authors.FindAsync([id], ct), "Author");
 
     public async Task<Author> CreateAuthorAsync(Author entity, CancellationToken ct = default)
     {
@@ -109,15 +129,16 @@ public class WebSparkService(WebSparkDbContext db)
 
     // ── Posts ────────────────────────────────────────────────────────────────
 
-    public async Task<List<Post>> GetPostsAsync(int? blogId, CancellationToken ct = default)
-    {
-        var query = db.Posts.AsQueryable();
-        if (blogId.HasValue) query = query.Where(p => p.Blog.Id == blogId.Value);
-        return await query.OrderByDescending(p => p.Published).ToListAsync(ct);
-    }
+    public Task<List<Post>> GetPostsAsync(int? blogId, CancellationToken ct = default)
+        => SafeListAsync(() =>
+        {
+            var query = db.Posts.AsQueryable();
+            if (blogId.HasValue) query = query.Where(p => p.Blog.Id == blogId.Value);
+            return query.OrderByDescending(p => p.Published).ToListAsync(ct);
+        }, "Post");
 
-    public async Task<Post?> GetPostAsync(int id, CancellationToken ct = default)
-        => await db.Posts.FindAsync([id], ct);
+    public Task<Post?> GetPostAsync(int id, CancellationToken ct = default)
+        => SafeSingleAsync(async () => await db.Posts.FindAsync([id], ct), "Post");
 
     public async Task<Post> CreatePostAsync(Post entity, CancellationToken ct = default)
     {
@@ -147,11 +168,11 @@ public class WebSparkService(WebSparkDbContext db)
 
     // ── Categories ──────────────────────────────────────────────────────────
 
-    public async Task<List<Category>> GetCategoriesAsync(CancellationToken ct = default)
-        => await db.Categories.OrderBy(c => c.Content).ToListAsync(ct);
+    public Task<List<Category>> GetCategoriesAsync(CancellationToken ct = default)
+        => SafeListAsync(() => db.Categories.OrderBy(c => c.Content).ToListAsync(ct), "Category");
 
-    public async Task<Category?> GetCategoryAsync(int id, CancellationToken ct = default)
-        => await db.Categories.FindAsync([id], ct);
+    public Task<Category?> GetCategoryAsync(int id, CancellationToken ct = default)
+        => SafeSingleAsync(async () => await db.Categories.FindAsync([id], ct), "Category");
 
     public async Task<Category> CreateCategoryAsync(Category entity, CancellationToken ct = default)
     {
@@ -181,15 +202,16 @@ public class WebSparkService(WebSparkDbContext db)
 
     // ── Menu ────────────────────────────────────────────────────────────────
 
-    public async Task<List<Menu>> GetMenusAsync(int? domainId, CancellationToken ct = default)
-    {
-        var query = db.Menu.AsQueryable();
-        if (domainId.HasValue) query = query.Where(m => m.Domain.Id == domainId.Value);
-        return await query.OrderBy(m => m.DisplayOrder).ThenBy(m => m.Title).ToListAsync(ct);
-    }
+    public Task<List<Menu>> GetMenusAsync(int? domainId, CancellationToken ct = default)
+        => SafeListAsync(() =>
+        {
+            var query = db.Menu.AsQueryable();
+            if (domainId.HasValue) query = query.Where(m => m.Domain.Id == domainId.Value);
+            return query.OrderBy(m => m.DisplayOrder).ThenBy(m => m.Title).ToListAsync(ct);
+        }, "Menu");
 
-    public async Task<Menu?> GetMenuAsync(int id, CancellationToken ct = default)
-        => await db.Menu.FindAsync([id], ct);
+    public Task<Menu?> GetMenuAsync(int id, CancellationToken ct = default)
+        => SafeSingleAsync(async () => await db.Menu.FindAsync([id], ct), "Menu");
 
     public async Task<Menu> CreateMenuAsync(Menu entity, CancellationToken ct = default)
     {
@@ -219,11 +241,11 @@ public class WebSparkService(WebSparkDbContext db)
 
     // ── Keywords ────────────────────────────────────────────────────────────
 
-    public async Task<List<Keyword>> GetKeywordsAsync(CancellationToken ct = default)
-        => await db.Keywords.OrderBy(k => k.Name).ToListAsync(ct);
+    public Task<List<Keyword>> GetKeywordsAsync(CancellationToken ct = default)
+        => SafeListAsync(() => db.Keywords.OrderBy(k => k.Name).ToListAsync(ct), "Keyword");
 
-    public async Task<Keyword?> GetKeywordAsync(int id, CancellationToken ct = default)
-        => await db.Keywords.FindAsync([id], ct);
+    public Task<Keyword?> GetKeywordAsync(int id, CancellationToken ct = default)
+        => SafeSingleAsync(async () => await db.Keywords.FindAsync([id], ct), "Keyword");
 
     public async Task<Keyword> CreateKeywordAsync(Keyword entity, CancellationToken ct = default)
     {
@@ -253,11 +275,11 @@ public class WebSparkService(WebSparkDbContext db)
 
     // ── ContentParts ────────────────────────────────────────────────────────
 
-    public async Task<List<ContentPart>> GetContentPartsAsync(CancellationToken ct = default)
-        => await db.ContentParts.OrderBy(c => c.Title).ToListAsync(ct);
+    public Task<List<ContentPart>> GetContentPartsAsync(CancellationToken ct = default)
+        => SafeListAsync(() => db.ContentParts.OrderBy(c => c.Title).ToListAsync(ct), "ContentPart");
 
-    public async Task<ContentPart?> GetContentPartAsync(int id, CancellationToken ct = default)
-        => await db.ContentParts.FindAsync([id], ct);
+    public Task<ContentPart?> GetContentPartAsync(int id, CancellationToken ct = default)
+        => SafeSingleAsync(async () => await db.ContentParts.FindAsync([id], ct), "ContentPart");
 
     public async Task<ContentPart> CreateContentPartAsync(ContentPart entity, CancellationToken ct = default)
     {
@@ -287,11 +309,11 @@ public class WebSparkService(WebSparkDbContext db)
 
     // ── Subscribers ─────────────────────────────────────────────────────────
 
-    public async Task<List<Subscriber>> GetSubscribersAsync(CancellationToken ct = default)
-        => await db.Subscribers.OrderBy(s => s.Email).ToListAsync(ct);
+    public Task<List<Subscriber>> GetSubscribersAsync(CancellationToken ct = default)
+        => SafeListAsync(() => db.Subscribers.OrderBy(s => s.Email).ToListAsync(ct), "Subscriber");
 
-    public async Task<Subscriber?> GetSubscriberAsync(int id, CancellationToken ct = default)
-        => await db.Subscribers.FindAsync([id], ct);
+    public Task<Subscriber?> GetSubscriberAsync(int id, CancellationToken ct = default)
+        => SafeSingleAsync(async () => await db.Subscribers.FindAsync([id], ct), "Subscriber");
 
     public async Task<Subscriber> CreateSubscriberAsync(Subscriber entity, CancellationToken ct = default)
     {
@@ -321,11 +343,11 @@ public class WebSparkService(WebSparkDbContext db)
 
     // ── Newsletters ─────────────────────────────────────────────────────────
 
-    public async Task<List<Newsletter>> GetNewslettersAsync(CancellationToken ct = default)
-        => await db.Newsletters.OrderByDescending(n => n.CreatedDate).ToListAsync(ct);
+    public Task<List<Newsletter>> GetNewslettersAsync(CancellationToken ct = default)
+        => SafeListAsync(() => db.Newsletters.OrderByDescending(n => n.CreatedDate).ToListAsync(ct), "Newsletter");
 
-    public async Task<Newsletter?> GetNewsletterAsync(int id, CancellationToken ct = default)
-        => await db.Newsletters.FindAsync([id], ct);
+    public Task<Newsletter?> GetNewsletterAsync(int id, CancellationToken ct = default)
+        => SafeSingleAsync(async () => await db.Newsletters.FindAsync([id], ct), "Newsletter");
 
     public async Task<Newsletter> CreateNewsletterAsync(Newsletter entity, CancellationToken ct = default)
     {
@@ -345,11 +367,11 @@ public class WebSparkService(WebSparkDbContext db)
 
     // ── MailSettings ─────────────────────────────────────────────────────────
 
-    public async Task<List<MailSetting>> GetMailSettingsAsync(CancellationToken ct = default)
-        => await db.MailSettings.OrderBy(m => m.FromEmail).ToListAsync(ct);
+    public Task<List<MailSetting>> GetMailSettingsAsync(CancellationToken ct = default)
+        => SafeListAsync(() => db.MailSettings.OrderBy(m => m.FromEmail).ToListAsync(ct), "MailSetting");
 
-    public async Task<MailSetting?> GetMailSettingAsync(int id, CancellationToken ct = default)
-        => await db.MailSettings.FindAsync([id], ct);
+    public Task<MailSetting?> GetMailSettingAsync(int id, CancellationToken ct = default)
+        => SafeSingleAsync(async () => await db.MailSettings.FindAsync([id], ct), "MailSetting");
 
     public async Task<MailSetting> CreateMailSettingAsync(MailSetting entity, CancellationToken ct = default)
     {

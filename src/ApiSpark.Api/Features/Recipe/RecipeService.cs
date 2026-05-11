@@ -3,19 +3,41 @@ using WebSpark.Recipe.Models;
 
 namespace ApiSpark.Api.Features.Recipe;
 
-public class RecipeService(IRecipeService recipeService)
+public class RecipeService(IRecipeService recipeService, ILogger<RecipeService> logger)
 {
     public IReadOnlyList<RecipeModel> GetApprovedRecipes()
-        => recipeService.Get().Where(r => r.IsApproved).ToList();
+    {
+        try { return recipeService.Get().Where(r => r.IsApproved).ToList(); }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to retrieve recipes — returning empty list");
+            return [];
+        }
+    }
 
     public RecipeModel? GetRecipeById(int id)
     {
-        var model = recipeService.Get(id);
-        return model.Id == 0 ? null : model;
+        try
+        {
+            var model = recipeService.Get(id);
+            return model.Id == 0 ? null : model;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to retrieve recipe {Id}", id);
+            return null;
+        }
     }
 
     public IReadOnlyList<RecipeCategoryModel> GetCategories()
-        => recipeService.GetRecipeCategoryList();
+    {
+        try { return recipeService.GetRecipeCategoryList(); }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to retrieve recipe categories — returning empty list");
+            return [];
+        }
+    }
 
     public RecipeModel CreateRecipe(RecipeModel model)
         => recipeService.Save(model);

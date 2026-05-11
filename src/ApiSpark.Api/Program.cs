@@ -24,22 +24,43 @@ builder.Services.AddApiSparkAuth();
 // CORS
 builder.Services.AddApiSparkCors(builder.Configuration, builder.Environment);
 
+// Resolve a SQLite "Data Source=<path>" against ContentRootPath so relative
+// paths work correctly under IIS (which sets a different working directory).
+var contentRoot = builder.Environment.ContentRootPath;
+static string ResolveSqliteConnStr(string? connStr, string root)
+{
+    if (string.IsNullOrEmpty(connStr)) return string.Empty;
+    var parts = connStr.Split(';', StringSplitOptions.RemoveEmptyEntries);
+    return string.Join(';', parts.Select(part =>
+    {
+        var kv = part.Split('=', 2);
+        if (kv.Length == 2 && kv[0].Trim().Equals("Data Source", StringComparison.OrdinalIgnoreCase))
+        {
+            var src = kv[1].Trim();
+            if (!Path.IsPathRooted(src))
+                src = Path.GetFullPath(Path.Combine(root, src));
+            return $"Data Source={src}";
+        }
+        return part;
+    }));
+}
+
 // Data layer
 builder.Services.AddDbContext<ApiSparkDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite(ResolveSqliteConnStr(builder.Configuration.GetConnectionString("DefaultConnection"), contentRoot)));
 
 builder.Services.AddScoped<IContentRepository, ContentRepository>();
 builder.Services.AddScoped<ContentService>();
 
 // Recipe data layer
 builder.Services.AddDbContext<RecipeDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("RecipeConnection")));
+    options.UseSqlite(ResolveSqliteConnStr(builder.Configuration.GetConnectionString("RecipeConnection"), contentRoot)));
 builder.Services.AddScoped<IRecipeService, RecipeProvider>();
 builder.Services.AddScoped<RecipeService>();
 
 // WebSpark.Core data layer
 builder.Services.AddDbContext<WebSparkDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("WebSparkConnection"))
+    options.UseSqlite(ResolveSqliteConnStr(builder.Configuration.GetConnectionString("WebSparkConnection"), contentRoot))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 builder.Services.AddScoped<WebSparkService>();
 

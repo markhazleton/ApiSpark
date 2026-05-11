@@ -15,6 +15,8 @@ public static class DatabaseSetup
         var db = scope.ServiceProvider.GetRequiredService<ApiSparkDbContext>();
         var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 
+        var apiSparkDbReady = false;
+
         if (config.GetValue<bool>("Database:ApplyMigrationsOnStartup"))
         {
             var connStr = config.GetConnectionString("DefaultConnection") ?? "";
@@ -34,8 +36,8 @@ public static class DatabaseSetup
                     }
                     catch (Exception ex)
                     {
-                        logger.LogCritical(ex, "Database directory '{Dir}' is not writable — aborting startup", dir);
-                        throw;
+                        logger.LogError(ex, "Database directory '{Dir}' is not writable — startup continues in degraded mode", dir);
+                        return;
                     }
                 }
             }
@@ -46,11 +48,11 @@ public static class DatabaseSetup
                 // WAL mode must be set via PRAGMA — not a valid Microsoft.Data.Sqlite connection string keyword
                 await db.Database.ExecuteSqlRawAsync("PRAGMA journal_mode=WAL;", cancellationToken);
                 logger.LogInformation("Database migrations applied and WAL mode enabled");
+                apiSparkDbReady = true;
             }
             catch (Exception ex)
             {
-                logger.LogCritical(ex, "Database migration failed — aborting startup");
-                throw;
+                logger.LogError(ex, "Database migration failed — startup continues in degraded mode");
             }
 
             using var recipeScope = app.Services.CreateScope();
@@ -72,8 +74,7 @@ public static class DatabaseSetup
             }
             catch (Exception ex)
             {
-                logger.LogCritical(ex, "Recipe database initialization failed — aborting startup");
-                throw;
+                logger.LogError(ex, "Recipe database initialization failed — startup continues in degraded mode");
             }
 
             using var webSparkScope = app.Services.CreateScope();
@@ -95,17 +96,23 @@ public static class DatabaseSetup
             }
             catch (Exception ex)
             {
-                logger.LogCritical(ex, "WebSpark database initialization failed — aborting startup");
-                throw;
+                logger.LogError(ex, "WebSpark database initialization failed — startup continues in degraded mode");
             }
         }
 
-        if (config.GetValue<bool>("Database:SeedOnStartup"))
+        if (config.GetValue<bool>("Database:SeedOnStartup") && apiSparkDbReady)
         {
-            if (!await db.Articles.AnyAsync(cancellationToken))
+            try
             {
-                await SeedData.LoadAsync(db, cancellationToken);
-                logger.LogInformation("Seed data loaded");
+                if (!await db.Articles.AnyAsync(cancellationToken))
+                {
+                    await SeedData.LoadAsync(db, cancellationToken);
+                    logger.LogInformation("Seed data loaded");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Seed data load failed — startup continues in degraded mode");
             }
         }
     }
