@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <!-- Suppress preview .NET SDK diagnostic (NETSDK1057) -->
+    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+    <!-- Suppress NuGet readme authoring advisory (NU5125) -->
+    <NoWarn>$(NoWarn);NU5125</NoWarn>
+  </PropertyGroup>
+</Project>

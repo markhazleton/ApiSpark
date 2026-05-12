@@ -4,6 +4,7 @@ using ApiSpark.Api.Infrastructure.Data.Repositories;
 using ApiSpark.Api.Infrastructure.Data.Seed;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ApiSpark.Api.Tests.Infrastructure.Data;
 
@@ -27,7 +28,7 @@ public class ContentRepositoryTests : IAsyncLifetime
         await _db.Database.EnsureCreatedAsync();
         await SeedData.LoadAsync(_db);
 
-        _repo = new ContentRepository(_db);
+        _repo = new ContentRepository(_db, NullLogger<ContentRepository>.Instance);
     }
 
     public async Task DisposeAsync()
