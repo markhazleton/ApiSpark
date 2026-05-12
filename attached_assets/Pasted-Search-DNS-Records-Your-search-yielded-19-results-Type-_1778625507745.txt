@@ -1,0 +1,188 @@
+Search DNS Records
+Your search yielded 19 results
+
+Type
+
+Name
+
+Content
+
+Proxy status
+
+
+
+TTL
+
+Actions
+
+CNAME
+github-stats
+markhazleton.github.io
+
+Proxied
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CNAME
+keypresscounter
+markhazleton.github.io
+
+Proxied
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CNAME
+async
+markhazleton-01.southcentralus.cloudapp.azure.com
+
+Proxied
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CNAME
+art
+markhazleton-01.southcentralus.cloudapp.azure.com
+
+Proxied
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CNAME
+bootstrap
+gentle-smoke-063be0b10.6.azurestaticapps.net
+
+Proxied
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CNAME
+bootswatch
+markhazleton-01.southcentralus.cloudapp.azure.com
+
+Proxied
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CNAME
+chat
+markhazleton-01.southcentralus.cloudapp.azure.com
+
+Proxied
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CNAME
+dataanalysis
+markhazleton-01.southcentralus.cloudapp.azure.com
+
+Proxied
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CNAME
+httpclientdecorator
+markhazleton-01.southcentralus.cloudapp.azure.com
+
+Proxied
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+
+
+CNAME
+makeboldspark.com
+markhazleton-01.southcentralus.cloudapp.azure.com
+
+Proxied
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CNAME
+museum
+markhazleton-01.southcentralus.cloudapp.azure.com
+
+Proxied
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CNAME
+prism
+markhazleton-01.southcentralus.cloudapp.azure.com
+
+Proxied
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CNAME
+tailwind
+markhazleton.github.io
+
+Proxied
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CNAME
+teach
+markhazleton-01.southcentralus.cloudapp.azure.com
+
+Proxied
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CNAME
+trivia
+markhazleton-01.southcentralus.cloudapp.azure.com
+
+Proxied
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CNAME
+ui
+markhazleton-01.southcentralus.cloudapp.azure.com
+
+Proxied
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CNAME
+web
+markhazleton-01.southcentralus.cloudapp.azure.com
+
+Proxied
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CNAME
+wpm
+markhazleton-01.southcentralus.cloudapp.azure.com
+
+Proxied
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+TXT
+bootstrap
+"_a74e1ue6aji98952llbwm3nguk4knb1"
+DNS only
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
