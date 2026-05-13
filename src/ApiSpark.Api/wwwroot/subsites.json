@@ -1,0 +1,213 @@
+{
+  "meta": {
+    "domain": "makeboldspark.com",
+    "description": "All active subdomains on makeboldspark.com",
+    "lastUpdated": "2025-05-13"
+  },
+  "subsites": [
+    {
+      "id": "github-stats",
+      "name": "GitHub Stats",
+      "subdomain": "github-stats",
+      "url": "https://github-stats.makeboldspark.com",
+      "icon": "📊",
+      "description": "Live GitHub activity dashboards and contribution visualizations for developer portfolios.",
+      "host": "markhazleton.github.io",
+      "hostType": "github",
+      "tag": "GitHub Pages",
+      "active": true
+    },
+    {
+      "id": "keypresscounter",
+      "name": "Keypress Counter",
+      "subdomain": "keypresscounter",
+      "url": "https://keypresscounter.makeboldspark.com",
+      "icon": "⌨️",
+      "description": "Track keystrokes, measure WPM, and explore typing patterns in real time.",
+      "host": "markhazleton.github.io",
+      "hostType": "github",
+      "tag": "GitHub Pages",
+      "active": true
+    },
+    {
+      "id": "wpm",
+      "name": "WPM Trainer",
+      "subdomain": "wpm",
+      "url": "https://wpm.makeboldspark.com",
+      "icon": "🏃",
+      "description": "Typing speed and accuracy training tool with progressive challenges.",
+      "host": "markhazleton-01.southcentralus.cloudapp.azure.com",
+      "hostType": "azure",
+      "tag": "Azure",
+      "active": true
+    },
+    {
+      "id": "async",
+      "name": "Async Patterns",
+      "subdomain": "async",
+      "url": "https://async.makeboldspark.com",
+      "icon": "⚡",
+      "description": "Interactive demonstrations of async/await, concurrency, and parallel execution in .NET.",
+      "host": "markhazleton-01.southcentralus.cloudapp.azure.com",
+      "hostType": "azure",
+      "tag": "Azure",
+      "active": true
+    },
+    {
+      "id": "art",
+      "name": "Art",
+      "subdomain": "art",
+      "url": "https://art.makeboldspark.com",
+      "icon": "🎨",
+      "description": "Generative art experiments and creative coding projects exploring algorithmic aesthetics.",
+      "host": "markhazleton-01.southcentralus.cloudapp.azure.com",
+      "hostType": "azure",
+      "tag": "Azure",
+      "active": true
+    },
+    {
+      "id": "bootstrap",
+      "name": "Bootstrap Showcase",
+      "subdomain": "bootstrap",
+      "url": "https://bootstrap.makeboldspark.com",
+      "icon": "🅱️",
+      "description": "Component library and theme gallery built on Bootstrap 5, deployed to Azure Static Web Apps.",
+      "host": "gentle-smoke-063be0b10.6.azurestaticapps.net",
+      "hostType": "static",
+      "tag": "Static Web App",
+      "active": true
+    },
+    {
+      "id": "bootswatch",
+      "name": "Bootswatch Themes",
+      "subdomain": "bootswatch",
+      "url": "https://bootswatch.makeboldspark.com",
+      "icon": "🎨",
+      "description": "Live preview and comparison of Bootswatch themes across Bootstrap components.",
+      "host": "markhazleton-01.southcentralus.cloudapp.azure.com",
+      "hostType": "azure",
+      "tag": "Azure",
+      "active": true
+    },
+    {
+      "id": "chat",
+      "name": "Chat",
+      "subdomain": "chat",
+      "url": "https://chat.makeboldspark.com",
+      "icon": "💬",
+      "description": "Real-time chat experiments and AI-powered conversation interfaces built on SignalR.",
+      "host": "markhazleton-01.southcentralus.cloudapp.azure.com",
+      "hostType": "azure",
+      "tag": "Azure",
+      "active": true
+    },
+    {
+      "id": "dataanalysis",
+      "name": "Data Analysis",
+      "subdomain": "dataanalysis",
+      "url": "https://dataanalysis.makeboldspark.com",
+      "icon": "📈",
+      "description": "Data visualization and analytics tools exploring patterns in real datasets.",
+      "host": "markhazleton-01.southcentralus.cloudapp.azure.com",
+      "hostType": "azure",
+      "tag": "Azure",
+      "active": true
+    },
+    {
+      "id": "httpclientdecorator",
+      "name": "HttpClient Decorator",
+      "subdomain": "httpclientdecorator",
+      "url": "https://httpclientdecorator.makeboldspark.com",
+      "icon": "🔗",
+      "description": "Resilience patterns for .NET HTTP clients — retry, circuit breaker, caching, and logging decorators.",
+      "host": "markhazleton-01.southcentralus.cloudapp.azure.com",
+      "hostType": "azure",
+      "tag": "Azure",
+      "active": true
+    },
+    {
+      "id": "museum",
+      "name": "Museum",
+      "subdomain": "museum",
+      "url": "https://museum.makeboldspark.com",
+      "icon": "🏛️",
+      "description": "Digital museum experience showcasing curated collections and interactive exhibits.",
+      "host": "markhazleton-01.southcentralus.cloudapp.azure.com",
+      "hostType": "azure",
+      "tag": "Azure",
+      "active": true
+    },
+    {
+      "id": "prism",
+      "name": "Prism",
+      "subdomain": "prism",
+      "url": "https://prism.makeboldspark.com",
+      "icon": "🔷",
+      "description": "Code syntax highlighting and documentation tools powered by the Prism.js library.",
+      "host": "markhazleton-01.southcentralus.cloudapp.azure.com",
+      "hostType": "azure",
+      "tag": "Azure",
+      "active": true
+    },
+    {
+      "id": "tailwind",
+      "name": "Tailwind Showcase",
+      "subdomain": "tailwind",
+      "url": "https://tailwind.makeboldspark.com",
+      "icon": "🌊",
+      "description": "Design system showcase and component gallery built with Tailwind CSS.",
+      "host": "markhazleton.github.io",
+      "hostType": "github",
+      "tag": "GitHub Pages",
+      "active": true
+    },
+    {
+      "id": "teach",
+      "name": "Teach",
+      "subdomain": "teach",
+      "url": "https://teach.makeboldspark.com",
+      "icon": "🎓",
+      "description": "Learning tools and educational content covering software development concepts and practices.",
+      "host": "markhazleton-01.southcentralus.cloudapp.azure.com",
+      "hostType": "azure",
+      "tag": "Azure",
+      "active": true
+    },
+    {
+      "id": "trivia",
+      "name": "Trivia",
+      "subdomain": "trivia",
+      "url": "https://trivia.makeboldspark.com",
+      "icon": "🧠",
+      "description": "Interactive trivia engine with categories, scoring, and real-time multiplayer support.",
+      "host": "markhazleton-01.southcentralus.cloudapp.azure.com",
+      "hostType": "azure",
+      "tag": "Azure",
+      "active": true
+    },
+    {
+      "id": "ui",
+      "name": "UI Components",
+      "subdomain": "ui",
+      "url": "https://ui.makeboldspark.com",
+      "icon": "🖥️",
+      "description": "Reusable UI component library and design system used across the MakeBoldSpark portfolio.",
+      "host": "markhazleton-01.southcentralus.cloudapp.azure.com",
+      "hostType": "azure",
+      "tag": "Azure",
+      "active": true
+    },
+    {
+      "id": "web",
+      "name": "Web Spark",
+      "subdomain": "web",
+      "url": "https://web.makeboldspark.com",
+      "icon": "🌐",
+      "description": "WebSpark platform — the publishing engine powering content-driven sites in this portfolio.",
+      "host": "markhazleton-01.southcentralus.cloudapp.azure.com",
+      "hostType": "azure",
+      "tag": "Azure",
+      "active": true
+    }
+  ]
+}
