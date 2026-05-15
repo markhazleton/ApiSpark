@@ -8,12 +8,14 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ApiSpark.Api.Tests.Infrastructure.Data;
 
-public class ContentRepositoryTests : IAsyncLifetime
+[TestClass]
+public class ContentRepositoryTests
 {
     private SqliteConnection _connection = null!;
     private ApiSparkDbContext _db = null!;
     private ContentRepository _repo = null!;
 
+    [TestInitialize]
     public async Task InitializeAsync()
     {
         var dbName = $"RepoTest_{Guid.NewGuid():N}";
@@ -31,56 +33,61 @@ public class ContentRepositoryTests : IAsyncLifetime
         _repo = new ContentRepository(_db, NullLogger<ContentRepository>.Instance);
     }
 
+    [TestCleanup]
     public async Task DisposeAsync()
     {
         await _db.DisposeAsync();
         await _connection.DisposeAsync();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GetPublishedArticles_ReturnsOnlyPublished()
     {
         var articles = await _repo.GetPublishedArticlesAsync();
-        Assert.All(articles, a => Assert.False(string.IsNullOrEmpty(a.Slug)));
-        Assert.DoesNotContain(articles, a => a.Slug == "draft-article");
-        Assert.Contains(articles, a => a.Slug == "hello-world");
+        foreach (var article in articles)
+        {
+            Assert.IsFalse(string.IsNullOrEmpty(article.Slug));
+        }
+
+        Assert.IsFalse(articles.Any(a => a.Slug == "draft-article"));
+        Assert.IsTrue(articles.Any(a => a.Slug == "hello-world"));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GetPublishedArticles_ExcludesBody()
     {
         var articles = await _repo.GetPublishedArticlesAsync();
-        Assert.True(articles.Count >= 2);
+        Assert.IsTrue(articles.Count >= 2);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GetPublishedArticleBySlug_Published_ReturnsDetail()
     {
         var article = await _repo.GetPublishedArticleBySlugAsync("hello-world");
-        Assert.NotNull(article);
-        Assert.Equal("hello-world", article.Slug);
-        Assert.False(string.IsNullOrEmpty(article.Body));
+        Assert.IsNotNull(article);
+        Assert.AreEqual("hello-world", article.Slug);
+        Assert.IsFalse(string.IsNullOrEmpty(article.Body));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GetPublishedArticleBySlug_Draft_ReturnsNull()
     {
         var article = await _repo.GetPublishedArticleBySlugAsync("draft-article");
-        Assert.Null(article);
+        Assert.IsNull(article);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GetPublishedArticleBySlug_Nonexistent_ReturnsNull()
     {
         var article = await _repo.GetPublishedArticleBySlugAsync("does-not-exist");
-        Assert.Null(article);
+        Assert.IsNull(article);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GetAllTags_ReturnsTags()
     {
         var tags = await _repo.GetAllTagsAsync();
-        Assert.True(tags.Count >= 2);
-        Assert.Contains(tags, t => t.Name == "general");
+        Assert.IsTrue(tags.Count >= 2);
+        Assert.IsTrue(tags.Any(t => t.Name == "general"));
     }
 }

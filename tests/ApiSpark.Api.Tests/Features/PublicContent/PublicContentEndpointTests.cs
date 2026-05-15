@@ -6,25 +6,39 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ApiSpark.Api.Tests.Features.PublicContent;
 
-public class PublicContentEndpointTests : IClassFixture<ApiSparkWebApplicationFactory>
+[TestClass]
+public class PublicContentEndpointTests
 {
-    private readonly HttpClient _client;
-    private readonly ApiSparkWebApplicationFactory _factory;
+    private static ApiSparkWebApplicationFactory _factory = null!;
+    private HttpClient _client = null!;
 
-    public PublicContentEndpointTests(ApiSparkWebApplicationFactory factory)
+    [ClassInitialize]
+    public static async Task ClassInitialize(TestContext _)
     {
-        _factory = factory;
-        _client = factory.CreateClient();
+        _factory = new ApiSparkWebApplicationFactory();
+        await _factory.InitializeAsync();
     }
 
-    [Fact]
+    [ClassCleanup]
+    public static async Task ClassCleanup()
+    {
+        await _factory.DisposeAsync();
+    }
+
+    [TestInitialize]
+    public void TestInitialize()
+    {
+        _client = _factory.CreateClient();
+    }
+
+    [TestMethod]
     public async Task GetArticles_ReturnsOk()
     {
         var response = await _client.GetAsync("/api/public/content/articles");
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GetArticles_ReturnsOnlyPublished()
     {
         var response = await _client.GetAsync("/api/public/content/articles");
@@ -32,54 +46,55 @@ public class PublicContentEndpointTests : IClassFixture<ApiSparkWebApplicationFa
         using var doc = JsonDocument.Parse(json);
         var articles = doc.RootElement.EnumerateArray().ToList();
 
-        Assert.All(articles, a =>
+        foreach (var a in articles)
         {
-            Assert.True(a.TryGetProperty("slug", out _));
-            Assert.True(a.TryGetProperty("title", out _));
-            Assert.True(a.TryGetProperty("summary", out _));
-            Assert.True(a.TryGetProperty("tags", out _));
-            Assert.False(a.TryGetProperty("body", out _), "Body should not appear in list response");
-        });
-        Assert.DoesNotContain(articles, a => a.GetProperty("slug").GetString() == "draft-article");
+            Assert.IsTrue(a.TryGetProperty("slug", out _));
+            Assert.IsTrue(a.TryGetProperty("title", out _));
+            Assert.IsTrue(a.TryGetProperty("summary", out _));
+            Assert.IsTrue(a.TryGetProperty("tags", out _));
+            Assert.IsFalse(a.TryGetProperty("body", out _), "Body should not appear in list response");
+        }
+
+        Assert.IsFalse(articles.Any(a => a.GetProperty("slug").GetString() == "draft-article"));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GetArticleBySlug_Published_ReturnsFullDetail()
     {
         var response = await _client.GetAsync("/api/public/content/articles/hello-world");
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
         var json = await response.Content.ReadAsStringAsync();
         using var doc = JsonDocument.Parse(json);
-        Assert.True(doc.RootElement.TryGetProperty("body", out var body));
-        Assert.False(string.IsNullOrEmpty(body.GetString()));
+        Assert.IsTrue(doc.RootElement.TryGetProperty("body", out var body));
+        Assert.IsFalse(string.IsNullOrEmpty(body.GetString()));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GetArticleBySlug_Draft_Returns404()
     {
         var response = await _client.GetAsync("/api/public/content/articles/draft-article");
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GetArticleBySlug_Nonexistent_Returns404()
     {
         var response = await _client.GetAsync("/api/public/content/articles/does-not-exist");
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GetArticleBySlug_InvalidSlug_Returns400()
     {
         var response = await _client.GetAsync("/api/public/content/articles/INVALID_SLUG!");
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GetTags_ReturnsOk()
     {
         var response = await _client.GetAsync("/api/public/content/tags");
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
     }
 }

@@ -3,38 +3,53 @@ using ApiSpark.Api.Tests.Infrastructure;
 
 namespace ApiSpark.Api.Tests.Infrastructure.Auth;
 
-public class AuthorizationBoundaryTests(ApiSparkWebApplicationFactory factory)
-    : IClassFixture<ApiSparkWebApplicationFactory>
+[TestClass]
+public class AuthorizationBoundaryTests
 {
-    [Fact]
+    private static ApiSparkWebApplicationFactory _factory = null!;
+
+    [ClassInitialize]
+    public static async Task ClassInitialize(TestContext _)
+    {
+        _factory = new ApiSparkWebApplicationFactory();
+        await _factory.InitializeAsync();
+    }
+
+    [ClassCleanup]
+    public static async Task ClassCleanup()
+    {
+        await _factory.DisposeAsync();
+    }
+
+    [TestMethod]
     public async Task AdminRoute_WithoutAuth_Returns401()
     {
-        var client = factory.CreateClient();
+        var client = _factory.CreateClient();
         var response = await client.GetAsync("/api/admin/health/deep");
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task AdminRoute_WithAdminRole_Returns200()
     {
-        var client = factory.CreateAdminClient();
+        var client = _factory.CreateAdminClient();
         var response = await client.GetAsync("/api/admin/health/deep");
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task AdminRoute_WithNonAdminRole_Returns403()
     {
-        var client = factory.CreatePublisherClient();
+        var client = _factory.CreatePublisherClient();
         var response = await client.GetAsync("/api/admin/health/deep");
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task PublicRoute_WithoutAuth_Returns200()
     {
-        var client = factory.CreateClient();
+        var client = _factory.CreateClient();
         var response = await client.GetAsync("/api/public/content/articles");
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
     }
 }

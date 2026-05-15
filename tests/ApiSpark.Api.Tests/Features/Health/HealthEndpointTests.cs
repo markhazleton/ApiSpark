@@ -6,44 +6,64 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ApiSpark.Api.Tests.Features.Health;
 
-public class HealthEndpointTests(ApiSparkWebApplicationFactory factory)
-    : IClassFixture<ApiSparkWebApplicationFactory>
+[TestClass]
+public class HealthEndpointTests
 {
-    private readonly HttpClient _client = factory.CreateClient();
+    private static ApiSparkWebApplicationFactory _factory = null!;
+    private HttpClient _client = null!;
 
-    [Fact]
+    [ClassInitialize]
+    public static async Task ClassInitialize(TestContext _)
+    {
+        _factory = new ApiSparkWebApplicationFactory();
+        await _factory.InitializeAsync();
+    }
+
+    [ClassCleanup]
+    public static async Task ClassCleanup()
+    {
+        await _factory.DisposeAsync();
+    }
+
+    [TestInitialize]
+    public void TestInitialize()
+    {
+        _client = _factory.CreateClient();
+    }
+
+    [TestMethod]
     public async Task GetHealth_ReturnsOk()
     {
         var response = await _client.GetAsync("/api/health");
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GetHealth_ReturnsCorrectBody()
     {
         var response = await _client.GetAsync("/api/health");
         var json = await response.Content.ReadAsStringAsync();
         using var doc = JsonDocument.Parse(json);
 
-        Assert.Equal("Healthy", doc.RootElement.GetProperty("status").GetString());
-        Assert.Equal("ApiSpark", doc.RootElement.GetProperty("service").GetString());
-        Assert.False(string.IsNullOrEmpty(doc.RootElement.GetProperty("version").GetString()));
+        Assert.AreEqual("Healthy", doc.RootElement.GetProperty("status").GetString());
+        Assert.AreEqual("ApiSpark", doc.RootElement.GetProperty("service").GetString());
+        Assert.IsFalse(string.IsNullOrEmpty(doc.RootElement.GetProperty("version").GetString()));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GetHealth_IsAnonymous_NoAuthRequired()
     {
-        var anonClient = factory.CreateClient();
+        var anonClient = _factory.CreateClient();
         var response = await anonClient.GetAsync("/api/health");
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GetHealth_RespondsFastEnough()
     {
         var sw = Stopwatch.StartNew();
         await _client.GetAsync("/api/health");
         sw.Stop();
-        Assert.True(sw.ElapsedMilliseconds < 500, $"Health response exceeded 500ms: {sw.ElapsedMilliseconds}ms");
+        Assert.IsTrue(sw.ElapsedMilliseconds < 500, $"Health response exceeded 500ms: {sw.ElapsedMilliseconds}ms");
     }
 }

@@ -4,46 +4,47 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace ApiSpark.Api.Tests.Features;
 
+[TestClass]
 public class ApiDocsAvailabilityTests
 {
-    [Fact]
+    [TestMethod]
     public async Task ScalarUi_InDevelopment_ReturnsOk()
     {
         await using var factory = new ApiSparkWebApplicationFactory();
         await factory.InitializeAsync();
         var client = factory.CreateClient();
         var response = await client.GetAsync("/scalar/v1");
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task OpenApiJson_InDevelopment_ReturnsOk()
     {
         await using var factory = new ApiSparkWebApplicationFactory();
         await factory.InitializeAsync();
         var client = factory.CreateClient();
         var response = await client.GetAsync("/openapi/v1.json");
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ScalarUi_InProduction_ReturnsNotFound()
     {
         await using var factory = new ProductionWebApplicationFactory();
         await factory.InitializeAsync();
         var client = factory.CreateClient();
         var response = await client.GetAsync("/scalar/v1");
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task OpenApiJson_InProduction_ReturnsNotFound()
     {
         await using var factory = new ProductionWebApplicationFactory();
         await factory.InitializeAsync();
         var client = factory.CreateClient();
         var response = await client.GetAsync("/openapi/v1.json");
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
     }
 }
 

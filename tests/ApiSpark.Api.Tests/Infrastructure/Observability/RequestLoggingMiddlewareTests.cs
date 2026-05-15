@@ -13,104 +13,118 @@ namespace ApiSpark.Api.Tests.Infrastructure.Observability;
 /// Fields: Method, RequestPath, StatusCode, DurationMs,
 ///         CorrelationId, UserId, FeatureName, OperationName, Success
 /// </summary>
-public class RequestLoggingMiddlewareTests : IClassFixture<LoggingTestFactory>
+[TestClass]
+public class RequestLoggingMiddlewareTests
 {
-    private readonly LoggingTestFactory _factory;
-    private readonly HttpClient _client;
+    private static LoggingTestFactory _factory = null!;
+    private HttpClient _client = null!;
 
-    public RequestLoggingMiddlewareTests(LoggingTestFactory factory)
+    [ClassInitialize]
+    public static async Task ClassInitialize(TestContext _)
     {
-        _factory = factory;
-        _client = factory.CreateClient();
+        _factory = new LoggingTestFactory();
+        await _factory.InitializeAsync();
     }
 
-    [Fact]
+    [ClassCleanup]
+    public static async Task ClassCleanup()
+    {
+        await _factory.DisposeAsync();
+    }
+
+    [TestInitialize]
+    public void TestInitialize()
+    {
+        _client = _factory.CreateClient();
+    }
+
+    [TestMethod]
     public async Task RequestLogging_CapturesMethod()
     {
         _factory.Capture.Messages.Clear();
         await _client.GetAsync("/api/health");
-        Assert.Contains(_factory.Capture.Messages, m => m.Contains("HTTP GET"));
+        Assert.IsTrue(_factory.Capture.Messages.Any(m => m.Contains("HTTP GET")));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task RequestLogging_CapturesRequestPath()
     {
         _factory.Capture.Messages.Clear();
         await _client.GetAsync("/api/health");
-        Assert.Contains(_factory.Capture.Messages, m => m.Contains("/api/health"));
+        Assert.IsTrue(_factory.Capture.Messages.Any(m => m.Contains("/api/health")));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task RequestLogging_CapturesStatusCode()
     {
         _factory.Capture.Messages.Clear();
         await _client.GetAsync("/api/health");
-        Assert.Contains(_factory.Capture.Messages, m => m.Contains("responded 200"));
+        Assert.IsTrue(_factory.Capture.Messages.Any(m => m.Contains("responded 200")));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task RequestLogging_CapturesDurationMs()
     {
         _factory.Capture.Messages.Clear();
         await _client.GetAsync("/api/health");
-        Assert.Contains(_factory.Capture.Messages, m => m.Contains("ms |"));
+        Assert.IsTrue(_factory.Capture.Messages.Any(m => m.Contains("ms |")));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task RequestLogging_CapturesCorrelationId()
     {
         _factory.Capture.Messages.Clear();
         using var req = new HttpRequestMessage(HttpMethod.Get, "/api/health");
         req.Headers.Add("X-Correlation-ID", "test-corr-123");
         await _client.SendAsync(req);
-        Assert.Contains(_factory.Capture.Messages, m => m.Contains("CorrelationId=test-corr-123"));
+        Assert.IsTrue(_factory.Capture.Messages.Any(m => m.Contains("CorrelationId=test-corr-123")));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task RequestLogging_UserId_IsAnonymousForUnauthenticated()
     {
         _factory.Capture.Messages.Clear();
         await _client.GetAsync("/api/health");
-        Assert.Contains(_factory.Capture.Messages, m => m.Contains("UserId=anonymous"));
+        Assert.IsTrue(_factory.Capture.Messages.Any(m => m.Contains("UserId=anonymous")));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task RequestLogging_CapturesFeatureName()
     {
         _factory.Capture.Messages.Clear();
         await _client.GetAsync("/api/health");
-        Assert.Contains(_factory.Capture.Messages, m => m.Contains("Feature="));
+        Assert.IsTrue(_factory.Capture.Messages.Any(m => m.Contains("Feature=")));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task RequestLogging_CapturesOperationName()
     {
         _factory.Capture.Messages.Clear();
         await _client.GetAsync("/api/health");
-        Assert.Contains(_factory.Capture.Messages, m => m.Contains("Operation="));
+        Assert.IsTrue(_factory.Capture.Messages.Any(m => m.Contains("Operation=")));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task RequestLogging_CapturesSuccessTrue_For2xx()
     {
         _factory.Capture.Messages.Clear();
         await _client.GetAsync("/api/health");
-        Assert.Contains(_factory.Capture.Messages, m => m.Contains("Success=True"));
+        Assert.IsTrue(_factory.Capture.Messages.Any(m => m.Contains("Success=True")));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task RequestLogging_CapturesSuccessFalse_For4xx()
     {
         _factory.Capture.Messages.Clear();
         await _client.GetAsync("/api/public/content/articles/nonexistent-article");
-        Assert.Contains(_factory.Capture.Messages, m => m.Contains("Success=False"));
+        Assert.IsTrue(_factory.Capture.Messages.Any(m => m.Contains("Success=False")));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task RequestLogging_ResponseHeader_ContainsCorrelationId()
     {
         var response = await _client.GetAsync("/api/health");
-        Assert.True(response.Headers.Contains("X-Correlation-ID"),
+        Assert.IsTrue(response.Headers.Contains("X-Correlation-ID"),
             "Response should echo X-Correlation-ID header");
     }
 }

@@ -15,7 +15,7 @@ using WebSpark.Recipe.Data;
 
 namespace ApiSpark.Api.Tests.Infrastructure;
 
-public class ApiSparkWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
+public class ApiSparkWebApplicationFactory : WebApplicationFactory<Program>
 {
     private SqliteConnection? _connection;
     private SqliteConnection? _recipeConnection;
