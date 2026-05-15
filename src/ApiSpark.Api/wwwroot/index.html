@@ -1,745 +1,999 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="MakeBoldSpark — a constellation of real-world projects, APIs, and tools built by Mark Hazleton and Make Bold Solutions. Thirty years of experience shipped as working software." />
-  <title>MakeBoldSpark — Where Ideas Ignite</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --navy:       #0a0f1e;
-      --navy-mid:   #0d1528;
-      --navy-light: #111c35;
-      --card:       #131f3a;
-      --card-hover: #172244;
-      --cyan:       #22d3ee;
-      --cyan-dim:   #0891b2;
-      --electric:   #3b82f6;
-      --text:       #f1f5f9;
-      --muted:      #94a3b8;
-      --border:     rgba(255,255,255,0.07);
-      --border-glow:rgba(34,211,238,0.25);
-      --radius:     0.75rem;
-      --font:       'Inter', system-ui, sans-serif;
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: var(--font);
-      background: var(--navy);
-      color: var(--text);
-      line-height: 1.6;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* ── NAV ── */
-    nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      padding: 1rem 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: rgba(10,15,30,0.8);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .nav-logo {
-      font-size: 1.1rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      color: var(--text);
-      text-decoration: none;
-    }
-    .nav-logo span { color: var(--cyan); }
-
-    .nav-links {
-      display: flex;
-      gap: 2rem;
-      list-style: none;
-    }
-    .nav-links a {
-      color: var(--muted);
-      text-decoration: none;
-      font-size: 0.875rem;
-      font-weight: 500;
-      transition: color 0.2s;
-    }
-    .nav-links a:hover { color: var(--cyan); }
-
-    /* ── HERO ── */
-    .hero {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 8rem 1.5rem 5rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(34,211,238,0.12) 0%, transparent 65%),
-        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(59,130,246,0.08) 0%, transparent 60%);
-      pointer-events: none;
-    }
-
-    /* animated spark grid */
-    .hero-grid {
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(34,211,238,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(34,211,238,0.04) 1px, transparent 1px);
-      background-size: 60px 60px;
-      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%);
-      pointer-events: none;
-    }
-
-    .hero-eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--cyan);
-      background: rgba(34,211,238,0.1);
-      border: 1px solid rgba(34,211,238,0.25);
-      padding: 0.35rem 1rem;
-      border-radius: 999px;
-      margin-bottom: 1.75rem;
-    }
-    .hero-eyebrow::before {
-      content: '';
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--cyan);
-      animation: pulse 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50%       { opacity: 0.5; transform: scale(0.8); }
-    }
-
-    .hero h1 {
-      font-size: clamp(2.5rem, 7vw, 5.5rem);
-      font-weight: 900;
-      letter-spacing: -0.03em;
-      line-height: 1.05;
-      max-width: 16ch;
-      margin-bottom: 1.5rem;
-    }
-
-    .hero h1 em {
-      font-style: normal;
-      background: linear-gradient(135deg, var(--cyan) 0%, var(--electric) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .hero-sub {
-      font-size: clamp(1rem, 2.5vw, 1.25rem);
-      color: var(--muted);
-      max-width: 52ch;
-      margin-bottom: 2.5rem;
-      line-height: 1.7;
-    }
-
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      justify-content: center;
-      margin-bottom: 4rem;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.75rem 1.75rem;
-      border-radius: var(--radius);
-      font-size: 0.95rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.2s;
-      cursor: pointer;
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--cyan-dim), var(--electric));
-      color: #fff;
-      box-shadow: 0 0 24px rgba(34,211,238,0.3);
-    }
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 0 36px rgba(34,211,238,0.45);
-    }
-    .btn-outline {
-      background: transparent;
-      color: var(--text);
-      border: 1px solid var(--border-glow);
-    }
-    .btn-outline:hover {
-      background: rgba(34,211,238,0.08);
-      border-color: var(--cyan);
-      color: var(--cyan);
-    }
-
-    /* ── STATS ── */
-    .stats-bar {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 0;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      width: 100%;
-      max-width: 56rem;
-    }
-    .stat {
-      flex: 1;
-      min-width: 140px;
-      padding: 1.5rem 2rem;
-      border-right: 1px solid var(--border);
-      text-align: center;
-    }
-    .stat:last-child { border-right: none; }
-    .stat-value {
-      font-size: 2rem;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      color: var(--cyan);
-      display: block;
-    }
-    .stat-label {
-      font-size: 0.8rem;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-weight: 500;
-      margin-top: 0.2rem;
-    }
-
-    /* ── SECTION SHELLS ── */
-    .section {
-      max-width: 72rem;
-      margin: 0 auto;
-      padding: 6rem 1.5rem;
-    }
-
-    .section-label {
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--cyan);
-      margin-bottom: 0.75rem;
-    }
-
-    .section-title {
-      font-size: clamp(1.75rem, 4vw, 2.75rem);
-      font-weight: 800;
-      letter-spacing: -0.025em;
-      line-height: 1.15;
-      margin-bottom: 1rem;
-    }
-
-    .section-desc {
-      color: var(--muted);
-      font-size: 1.05rem;
-      max-width: 58ch;
-      line-height: 1.75;
-      margin-bottom: 3rem;
-    }
-
-    /* ── PROJECTS GRID ── */
-    .projects-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
-      gap: 1rem;
-    }
-
-    .project-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      text-decoration: none;
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      gap: 0.6rem;
-      transition: all 0.25s;
-      position: relative;
-      overflow: hidden;
-    }
-    .project-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--cyan), var(--electric));
-      opacity: 0;
-      transition: opacity 0.25s;
-    }
-    .project-card:hover {
-      background: var(--card-hover);
-      border-color: var(--border-glow);
-      transform: translateY(-3px);
-      box-shadow: 0 8px 32px rgba(34,211,238,0.1);
-    }
-    .project-card:hover::before { opacity: 1; }
-
-    .project-icon {
-      width: 2.5rem; height: 2.5rem;
-      border-radius: 0.5rem;
-      background: rgba(34,211,238,0.12);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.15rem;
-      margin-bottom: 0.25rem;
-    }
-
-    .project-name {
-      font-size: 1rem;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-    }
-
-    .project-host {
-      font-size: 0.72rem;
-      color: var(--cyan);
-      font-family: ui-monospace, 'Cascadia Code', monospace;
-      opacity: 0.85;
-    }
-
-    .project-desc {
-      font-size: 0.875rem;
-      color: var(--muted);
-      line-height: 1.55;
-      flex: 1;
-    }
-
-    .project-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-      font-size: 0.7rem;
-      font-weight: 600;
-      padding: 0.2rem 0.55rem;
-      border-radius: 999px;
-      width: fit-content;
-    }
-    .tag-azure  { background: rgba(59,130,246,0.15); color: #93c5fd; }
-    .tag-github { background: rgba(148,163,184,0.12); color: #94a3b8; }
-    .tag-static { background: rgba(34,211,238,0.12); color: var(--cyan); }
-
-    /* ── DIVIDER ── */
-    .divider {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: 0;
-    }
-
-    /* ── API SECTION ── */
-    .api-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
-      gap: 1rem;
-    }
-
-    .api-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      transition: border-color 0.2s;
-    }
-    .api-card:hover { border-color: var(--border-glow); }
-
-    .api-route {
-      font-family: ui-monospace, 'Cascadia Code', monospace;
-      font-size: 0.78rem;
-      color: var(--cyan);
-      background: rgba(34,211,238,0.1);
-      padding: 0.2rem 0.55rem;
-      border-radius: 0.3rem;
-      display: inline-block;
-      margin-bottom: 0.75rem;
-    }
-
-    .api-name {
-      font-size: 1rem;
-      font-weight: 700;
-      margin-bottom: 0.4rem;
-    }
-
-    .api-desc {
-      font-size: 0.875rem;
-      color: var(--muted);
-      line-height: 1.55;
-      margin-bottom: 0.75rem;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      font-size: 0.7rem;
-      font-weight: 600;
-      padding: 0.2rem 0.6rem;
-      border-radius: 999px;
-    }
-    .badge-open { background: rgba(34,197,94,0.15); color: #86efac; }
-    .badge-auth { background: rgba(234,179,8,0.15);  color: #fde047; }
-
-    /* ── MISSION ── */
-    .mission-wrap {
-      background: var(--navy-light);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .mission-inner {
-      max-width: 72rem;
-      margin: 0 auto;
-      padding: 6rem 1.5rem;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4rem;
-      align-items: center;
-    }
-
-    .mission-quote {
-      font-size: clamp(1.4rem, 3vw, 2rem);
-      font-weight: 700;
-      line-height: 1.35;
-      letter-spacing: -0.02em;
-    }
-    .mission-quote em {
-      font-style: normal;
-      color: var(--cyan);
-    }
-
-    .mission-text p {
-      color: var(--muted);
-      line-height: 1.8;
-      margin-bottom: 1rem;
-    }
-    .mission-text p:last-child { margin-bottom: 0; }
-
-    .mission-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      margin-top: 1.5rem;
-    }
-
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.4rem 0.9rem;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-decoration: none;
-      border: 1px solid var(--border-glow);
-      color: var(--cyan);
-      transition: all 0.2s;
-    }
-    .chip:hover {
-      background: rgba(34,211,238,0.1);
-    }
-
-    /* ── FOOTER ── */
-    footer {
-      background: var(--navy-mid);
-      border-top: 1px solid var(--border);
-      padding: 3rem 1.5rem;
-      text-align: center;
-    }
-
-    .footer-logo {
-      font-size: 1.25rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      margin-bottom: 0.5rem;
-    }
-    .footer-logo span { color: var(--cyan); }
-
-    footer p {
-      font-size: 0.85rem;
-      color: var(--muted);
-      margin-bottom: 0.4rem;
-    }
-    footer a {
-      color: var(--cyan);
-      text-decoration: none;
-    }
-    footer a:hover { text-decoration: underline; }
-
-    .footer-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.5rem;
-      justify-content: center;
-      margin: 1.25rem 0 0;
-      list-style: none;
-    }
-    .footer-links a {
-      color: var(--muted);
-      font-size: 0.85rem;
-    }
-    .footer-links a:hover { color: var(--cyan); }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 768px) {
-      .nav-links { display: none; }
-      .mission-inner { grid-template-columns: 1fr; gap: 2rem; }
-      .stat { min-width: 50%; }
-    }
-  </style>
-</head>
-<body>
-
-<!-- NAV -->
-<nav>
-  <a class="nav-logo" href="/">Make<span>Bold</span>Spark</a>
-  <ul class="nav-links">
-    <li><a href="#projects">Projects</a></li>
-    <li><a href="#api">APIs</a></li>
-    <li><a href="#mission">Mission</a></li>
-    <li><a href="https://markhazleton.com" target="_blank" rel="noopener">markhazleton.com</a></li>
-  </ul>
-</nav>
-
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-grid"></div>
-
-  <div class="hero-eyebrow">Live &amp; Actively Developed</div>
-
-  <h1>Where <em>Bold Ideas</em><br/>Become Real Software</h1>
-
-  <p class="hero-sub">
-    MakeBoldSpark is a constellation of real-world projects, APIs, and experiments
-    built by <strong style="color:var(--text)">Mark Hazleton</strong> and
-    <strong style="color:var(--text)">Make Bold Solutions</strong> — thirty years of
-    experience shipped as working software.
-  </p>
-
-  <div class="hero-actions">
-    <a class="btn btn-primary" href="#projects">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-      Explore Projects
-    </a>
-    <a class="btn btn-outline" href="/scalar/v1">
-      API Reference
-    </a>
-    <a class="btn btn-outline" href="https://markhazleton.com" target="_blank" rel="noopener">
-      Mark Hazleton →
-    </a>
-  </div>
-
-  <div class="stats-bar">
-    <div class="stat">
-      <span class="stat-value">17</span>
-      <span class="stat-label">Live Projects</span>
-    </div>
-    <div class="stat">
-      <span class="stat-value">30+</span>
-      <span class="stat-label">Years Experience</span>
-    </div>
-    <div class="stat">
-      <span class="stat-value">100%</span>
-      <span class="stat-label">Production Code</span>
-    </div>
-    <div class="stat">
-      <span class="stat-value">Azure</span>
-      <span class="stat-label">Cloud Native</span>
-    </div>
-  </div>
-</section>
-
-<hr class="divider" />
-
-<!-- PROJECTS -->
-<section class="section" id="projects">
-  <p class="section-label">The Portfolio</p>
-  <h2 class="section-title">Spark by Spark,<br/>Building Something Bigger</h2>
-  <p class="section-desc">
-    Each subdomain on <code style="color:var(--cyan);background:rgba(34,211,238,0.1);padding:0.1em 0.4em;border-radius:0.3rem;font-size:0.9em">makeboldspark.com</code>
-    is a real, deployed project — not a demo, not a mockup. Click through and explore.
-  </p>
-
-  <div class="projects-grid" id="projects-grid">
-    <div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted)">Loading projects…</div>
-  </div>
-</section>
-
-<hr class="divider" />
-
-<!-- API -->
-<section class="section" id="api">
-  <p class="section-label">Developer Platform</p>
-  <h2 class="section-title">One API to Power<br/>the Whole Ecosystem</h2>
-  <p class="section-desc">
-    MakeBoldSpark consolidates multiple low-volume APIs into a single cost-efficient
-    ASP.NET Core application backed by SQLite and deployed on Azure App Service Linux.
-  </p>
-
-  <div class="api-grid">
-
-    <div class="api-card">
-      <div class="api-route">/api/public</div>
-      <div class="api-name">Public Content</div>
-      <div class="api-desc">Read-only content endpoints powering static sites and SPAs across the portfolio.</div>
-      <span class="badge badge-open">✓ Open</span>
-    </div>
-
-    <div class="api-card">
-      <div class="api-route">/api/public/recipes</div>
-      <div class="api-name">Recipe API</div>
-      <div class="api-desc">Structured recipe data — ingredients, instructions, and metadata — served as clean JSON.</div>
-      <span class="badge badge-open">✓ Open</span>
-    </div>
-
-    <div class="api-card">
-      <div class="api-route">/api/public/webspark</div>
-      <div class="api-name">WebSpark API</div>
-      <div class="api-desc">Content and configuration data for WebSpark-powered sites across the portfolio.</div>
-      <span class="badge badge-open">✓ Open</span>
-    </div>
-
-    <div class="api-card">
-      <div class="api-route">/api/health</div>
-      <div class="api-name">Health Check</div>
-      <div class="api-desc">Shallow health probe for uptime monitoring and Azure App Service health checks.</div>
-      <span class="badge badge-open">✓ Open</span>
-    </div>
-
-    <div class="api-card">
-      <div class="api-route">/api/admin</div>
-      <div class="api-name">Admin API</div>
-      <div class="api-desc">Authenticated CMS and administration endpoints requiring the Admin role.</div>
-      <span class="badge badge-auth">🔒 Auth Required</span>
-    </div>
-
-    <div class="api-card">
-      <div class="api-route">/api/publish</div>
-      <div class="api-name">Publish API</div>
-      <div class="api-desc">Authenticated publishing and static-export endpoints requiring the Publisher role.</div>
-      <span class="badge badge-auth">🔒 Auth Required</span>
-    </div>
-
-  </div>
-
-  <div style="margin-top:2rem; display:flex; flex-wrap:wrap; gap:1rem;">
-    <a class="btn btn-primary" href="/scalar/v1">Open API Reference</a>
-    <a class="btn btn-outline" href="https://github.com/MarkHazleton/ApiSpark" target="_blank" rel="noopener">View on GitHub</a>
-  </div>
-</section>
-
-<!-- MISSION -->
-<div class="mission-wrap" id="mission">
-  <div class="mission-inner">
-    <div>
-      <p class="section-label">The Mission</p>
-      <p class="mission-quote">
-        "Ideas that <em>stay in your head</em> help no one.<br/>
-        Ship something <em>bold</em>."
+  <head>
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-RY77Z11S9E"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-RY77Z11S9E");
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="MakeBoldSpark — a constellation of real-world projects, APIs, and tools built by Mark Hazleton and Make Bold Solutions. Thirty years of experience shipped as working software."
+    />
+    <title>MakeBoldSpark — Where Ideas Ignite</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --navy: #0a0f1e;
+        --navy-mid: #0d1528;
+        --navy-light: #111c35;
+        --card: #131f3a;
+        --card-hover: #172244;
+        --cyan: #22d3ee;
+        --cyan-dim: #0891b2;
+        --electric: #3b82f6;
+        --text: #f1f5f9;
+        --muted: #94a3b8;
+        --border: rgba(255, 255, 255, 0.07);
+        --border-glow: rgba(34, 211, 238, 0.25);
+        --radius: 0.75rem;
+        --font: "Inter", system-ui, sans-serif;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: var(--font);
+        background: var(--navy);
+        color: var(--text);
+        line-height: 1.6;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* ── NAV ── */
+      nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        padding: 1rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(10, 15, 30, 0.8);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .nav-logo {
+        font-size: 1.1rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--text);
+        text-decoration: none;
+      }
+      .nav-logo span {
+        color: var(--cyan);
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 2rem;
+        list-style: none;
+      }
+      .nav-links a {
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: color 0.2s;
+      }
+      .nav-links a:hover {
+        color: var(--cyan);
+      }
+
+      /* ── HERO ── */
+      .hero {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 8rem 1.5rem 5rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(
+            ellipse 80% 60% at 50% 0%,
+            rgba(34, 211, 238, 0.12) 0%,
+            transparent 65%
+          ),
+          radial-gradient(
+            ellipse 60% 40% at 80% 80%,
+            rgba(59, 130, 246, 0.08) 0%,
+            transparent 60%
+          );
+        pointer-events: none;
+      }
+
+      /* animated spark grid */
+      .hero-grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(34, 211, 238, 0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(34, 211, 238, 0.04) 1px, transparent 1px);
+        background-size: 60px 60px;
+        mask-image: radial-gradient(
+          ellipse 80% 80% at 50% 50%,
+          black 20%,
+          transparent 100%
+        );
+        pointer-events: none;
+      }
+
+      .hero-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--cyan);
+        background: rgba(34, 211, 238, 0.1);
+        border: 1px solid rgba(34, 211, 238, 0.25);
+        padding: 0.35rem 1rem;
+        border-radius: 999px;
+        margin-bottom: 1.75rem;
+      }
+      .hero-eyebrow::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--cyan);
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.5;
+          transform: scale(0.8);
+        }
+      }
+
+      .hero h1 {
+        font-size: clamp(2.5rem, 7vw, 5.5rem);
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        line-height: 1.05;
+        max-width: 16ch;
+        margin-bottom: 1.5rem;
+      }
+
+      .hero h1 em {
+        font-style: normal;
+        background: linear-gradient(
+          135deg,
+          var(--cyan) 0%,
+          var(--electric) 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .hero-sub {
+        font-size: clamp(1rem, 2.5vw, 1.25rem);
+        color: var(--muted);
+        max-width: 52ch;
+        margin-bottom: 2.5rem;
+        line-height: 1.7;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: center;
+        margin-bottom: 4rem;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.75rem;
+        border-radius: var(--radius);
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+        cursor: pointer;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, var(--cyan-dim), var(--electric));
+        color: #fff;
+        box-shadow: 0 0 24px rgba(34, 211, 238, 0.3);
+      }
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 36px rgba(34, 211, 238, 0.45);
+      }
+      .btn-outline {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--border-glow);
+      }
+      .btn-outline:hover {
+        background: rgba(34, 211, 238, 0.08);
+        border-color: var(--cyan);
+        color: var(--cyan);
+      }
+
+      /* ── STATS ── */
+      .stats-bar {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        width: 100%;
+        max-width: 56rem;
+      }
+      .stat {
+        flex: 1;
+        min-width: 140px;
+        padding: 1.5rem 2rem;
+        border-right: 1px solid var(--border);
+        text-align: center;
+      }
+      .stat:last-child {
+        border-right: none;
+      }
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: var(--cyan);
+        display: block;
+      }
+      .stat-label {
+        font-size: 0.8rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 500;
+        margin-top: 0.2rem;
+      }
+
+      /* ── SECTION SHELLS ── */
+      .section {
+        max-width: 72rem;
+        margin: 0 auto;
+        padding: 6rem 1.5rem;
+      }
+
+      .section-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--cyan);
+        margin-bottom: 0.75rem;
+      }
+
+      .section-title {
+        font-size: clamp(1.75rem, 4vw, 2.75rem);
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        line-height: 1.15;
+        margin-bottom: 1rem;
+      }
+
+      .section-desc {
+        color: var(--muted);
+        font-size: 1.05rem;
+        max-width: 58ch;
+        line-height: 1.75;
+        margin-bottom: 3rem;
+      }
+
+      /* ── PROJECTS GRID ── */
+      .projects-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+        gap: 1rem;
+      }
+
+      .project-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        text-decoration: none;
+        color: var(--text);
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        transition: all 0.25s;
+        position: relative;
+        overflow: hidden;
+      }
+      .project-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--cyan), var(--electric));
+        opacity: 0;
+        transition: opacity 0.25s;
+      }
+      .project-card:hover {
+        background: var(--card-hover);
+        border-color: var(--border-glow);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 32px rgba(34, 211, 238, 0.1);
+      }
+      .project-card:hover::before {
+        opacity: 1;
+      }
+
+      .project-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.5rem;
+        background: rgba(34, 211, 238, 0.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .project-name {
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+
+      .project-host {
+        font-size: 0.72rem;
+        color: var(--cyan);
+        font-family: ui-monospace, "Cascadia Code", monospace;
+        opacity: 0.85;
+      }
+
+      .project-desc {
+        font-size: 0.875rem;
+        color: var(--muted);
+        line-height: 1.55;
+        flex: 1;
+      }
+
+      .project-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 0.2rem 0.55rem;
+        border-radius: 999px;
+        width: fit-content;
+      }
+      .tag-azure {
+        background: rgba(59, 130, 246, 0.15);
+        color: #93c5fd;
+      }
+      .tag-github {
+        background: rgba(148, 163, 184, 0.12);
+        color: #94a3b8;
+      }
+      .tag-static {
+        background: rgba(34, 211, 238, 0.12);
+        color: var(--cyan);
+      }
+
+      /* ── DIVIDER ── */
+      .divider {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 0;
+      }
+
+      /* ── API SECTION ── */
+      .api-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+        gap: 1rem;
+      }
+
+      .api-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        transition: border-color 0.2s;
+      }
+      .api-card:hover {
+        border-color: var(--border-glow);
+      }
+
+      .api-route {
+        font-family: ui-monospace, "Cascadia Code", monospace;
+        font-size: 0.78rem;
+        color: var(--cyan);
+        background: rgba(34, 211, 238, 0.1);
+        padding: 0.2rem 0.55rem;
+        border-radius: 0.3rem;
+        display: inline-block;
+        margin-bottom: 0.75rem;
+      }
+
+      .api-name {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 0.4rem;
+      }
+
+      .api-desc {
+        font-size: 0.875rem;
+        color: var(--muted);
+        line-height: 1.55;
+        margin-bottom: 0.75rem;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 0.2rem 0.6rem;
+        border-radius: 999px;
+      }
+      .badge-open {
+        background: rgba(34, 197, 94, 0.15);
+        color: #86efac;
+      }
+      .badge-auth {
+        background: rgba(234, 179, 8, 0.15);
+        color: #fde047;
+      }
+
+      /* ── MISSION ── */
+      .mission-wrap {
+        background: var(--navy-light);
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .mission-inner {
+        max-width: 72rem;
+        margin: 0 auto;
+        padding: 6rem 1.5rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+        align-items: center;
+      }
+
+      .mission-quote {
+        font-size: clamp(1.4rem, 3vw, 2rem);
+        font-weight: 700;
+        line-height: 1.35;
+        letter-spacing: -0.02em;
+      }
+      .mission-quote em {
+        font-style: normal;
+        color: var(--cyan);
+      }
+
+      .mission-text p {
+        color: var(--muted);
+        line-height: 1.8;
+        margin-bottom: 1rem;
+      }
+      .mission-text p:last-child {
+        margin-bottom: 0;
+      }
+
+      .mission-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4rem 0.9rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1px solid var(--border-glow);
+        color: var(--cyan);
+        transition: all 0.2s;
+      }
+      .chip:hover {
+        background: rgba(34, 211, 238, 0.1);
+      }
+
+      /* ── FOOTER ── */
+      footer {
+        background: var(--navy-mid);
+        border-top: 1px solid var(--border);
+        padding: 3rem 1.5rem;
+        text-align: center;
+      }
+
+      .footer-logo {
+        font-size: 1.25rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin-bottom: 0.5rem;
+      }
+      .footer-logo span {
+        color: var(--cyan);
+      }
+
+      footer p {
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-bottom: 0.4rem;
+      }
+      footer a {
+        color: var(--cyan);
+        text-decoration: none;
+      }
+      footer a:hover {
+        text-decoration: underline;
+      }
+
+      .footer-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        justify-content: center;
+        margin: 1.25rem 0 0;
+        list-style: none;
+      }
+      .footer-links a {
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+      .footer-links a:hover {
+        color: var(--cyan);
+      }
+
+      /* ── RESPONSIVE ── */
+      @media (max-width: 768px) {
+        .nav-links {
+          display: none;
+        }
+        .mission-inner {
+          grid-template-columns: 1fr;
+          gap: 2rem;
+        }
+        .stat {
+          min-width: 50%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- NAV -->
+    <nav>
+      <a class="nav-logo" href="/">Make<span>Bold</span>Spark</a>
+      <ul class="nav-links">
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#api">APIs</a></li>
+        <li><a href="#mission">Mission</a></li>
+        <li>
+          <a href="https://markhazleton.com" target="_blank" rel="noopener"
+            >markhazleton.com</a
+          >
+        </li>
+      </ul>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-grid"></div>
+
+      <div class="hero-eyebrow">Live &amp; Actively Developed</div>
+
+      <h1>Where <em>Bold Ideas</em><br />Become Real Software</h1>
+
+      <p class="hero-sub">
+        MakeBoldSpark is a constellation of real-world projects, APIs, and
+        experiments built by
+        <strong style="color: var(--text)">Mark Hazleton</strong> and
+        <strong style="color: var(--text)">Make Bold Solutions</strong> — thirty
+        years of experience shipped as working software.
       </p>
-      <div class="mission-links">
-        <a class="chip" href="https://markhazleton.com" target="_blank" rel="noopener">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-          markhazleton.com
+
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#projects">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+          </svg>
+          Explore Projects
         </a>
-        <a class="chip" href="https://makeboldsolutions.com" target="_blank" rel="noopener">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-          makeboldsolutions.com
+        <a
+          class="btn btn-outline"
+          href="/scalar/v1"
+          data-api-docs-link
+          style="display: none"
+        >
+          API Reference
         </a>
-        <a class="chip" href="https://github.com/MarkHazleton" target="_blank" rel="noopener">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-          GitHub
+        <a
+          class="btn btn-outline"
+          href="https://markhazleton.com"
+          target="_blank"
+          rel="noopener"
+        >
+          Mark Hazleton →
         </a>
       </div>
+
+      <div class="stats-bar">
+        <div class="stat">
+          <span class="stat-value">17</span>
+          <span class="stat-label">Live Projects</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">30+</span>
+          <span class="stat-label">Years Experience</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">100%</span>
+          <span class="stat-label">Production Code</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">Azure</span>
+          <span class="stat-label">Cloud Native</span>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- PROJECTS -->
+    <section class="section" id="projects">
+      <p class="section-label">The Portfolio</p>
+      <h2 class="section-title">
+        Spark by Spark,<br />Building Something Bigger
+      </h2>
+      <p class="section-desc">
+        Each subdomain on
+        <code
+          style="
+            color: var(--cyan);
+            background: rgba(34, 211, 238, 0.1);
+            padding: 0.1em 0.4em;
+            border-radius: 0.3rem;
+            font-size: 0.9em;
+          "
+          >makeboldspark.com</code
+        >
+        is a real, deployed project — not a demo, not a mockup. Click through
+        and explore.
+      </p>
+
+      <div class="projects-grid" id="projects-grid">
+        <div
+          style="
+            grid-column: 1/-1;
+            text-align: center;
+            padding: 3rem;
+            color: var(--muted);
+          "
+        >
+          Loading projects…
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- API -->
+    <section class="section" id="api">
+      <p class="section-label">Developer Platform</p>
+      <h2 class="section-title">One API to Power<br />the Whole Ecosystem</h2>
+      <p class="section-desc">
+        MakeBoldSpark consolidates multiple low-volume APIs into a single
+        cost-efficient ASP.NET Core application backed by SQLite and deployed on
+        Azure App Service Linux.
+      </p>
+
+      <div class="api-grid">
+        <div class="api-card">
+          <div class="api-route">/api/public</div>
+          <div class="api-name">Public Content</div>
+          <div class="api-desc">
+            Read-only content endpoints powering static sites and SPAs across
+            the portfolio.
+          </div>
+          <span class="badge badge-open">✓ Open</span>
+        </div>
+
+        <div class="api-card">
+          <div class="api-route">/api/public/recipes</div>
+          <div class="api-name">Recipe API</div>
+          <div class="api-desc">
+            Structured recipe data — ingredients, instructions, and metadata —
+            served as clean JSON.
+          </div>
+          <span class="badge badge-open">✓ Open</span>
+        </div>
+
+        <div class="api-card">
+          <div class="api-route">/api/public/webspark</div>
+          <div class="api-name">WebSpark API</div>
+          <div class="api-desc">
+            Content and configuration data for WebSpark-powered sites across the
+            portfolio.
+          </div>
+          <span class="badge badge-open">✓ Open</span>
+        </div>
+
+        <div class="api-card">
+          <div class="api-route">/api/health</div>
+          <div class="api-name">Health Check</div>
+          <div class="api-desc">
+            Shallow health probe for uptime monitoring and Azure App Service
+            health checks.
+          </div>
+          <span class="badge badge-open">✓ Open</span>
+        </div>
+
+        <div class="api-card">
+          <div class="api-route">/api/admin</div>
+          <div class="api-name">Admin API</div>
+          <div class="api-desc">
+            Authenticated CMS and administration endpoints requiring the Admin
+            role.
+          </div>
+          <span class="badge badge-auth">🔒 Auth Required</span>
+        </div>
+
+        <div class="api-card">
+          <div class="api-route">/api/publish</div>
+          <div class="api-name">Publish API</div>
+          <div class="api-desc">
+            Authenticated publishing and static-export endpoints requiring the
+            Publisher role.
+          </div>
+          <span class="badge badge-auth">🔒 Auth Required</span>
+        </div>
+      </div>
+
+      <div style="margin-top: 2rem; display: flex; flex-wrap: wrap; gap: 1rem">
+        <a
+          class="btn btn-primary"
+          href="/scalar/v1"
+          data-api-docs-link
+          style="display: none"
+          >Open API Reference</a
+        >
+        <a
+          class="btn btn-outline"
+          href="https://github.com/MarkHazleton/ApiSpark"
+          target="_blank"
+          rel="noopener"
+          >View on GitHub</a
+        >
+      </div>
+    </section>
+
+    <!-- MISSION -->
+    <div class="mission-wrap" id="mission">
+      <div class="mission-inner">
+        <div>
+          <p class="section-label">The Mission</p>
+          <p class="mission-quote">
+            "Ideas that <em>stay in your head</em> help no one.<br />
+            Ship something <em>bold</em>."
+          </p>
+          <div class="mission-links">
+            <a
+              class="chip"
+              href="https://markhazleton.com"
+              target="_blank"
+              rel="noopener"
+            >
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path
+                  d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                />
+              </svg>
+              markhazleton.com
+            </a>
+            <a
+              class="chip"
+              href="https://makeboldsolutions.com"
+              target="_blank"
+              rel="noopener"
+            >
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path
+                  d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                />
+              </svg>
+              makeboldsolutions.com
+            </a>
+            <a
+              class="chip"
+              href="https://github.com/MarkHazleton"
+              target="_blank"
+              rel="noopener"
+            >
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
+                />
+              </svg>
+              GitHub
+            </a>
+          </div>
+        </div>
+        <div class="mission-text">
+          <p>
+            MakeBoldSpark is the shared infrastructure and portfolio home for
+            projects by Mark Hazleton — a Technical Solutions Architect with
+            thirty years of experience turning real-world problems into
+            production software.
+          </p>
+          <p>
+            Every project here is tested under real constraints: real traffic,
+            real data, real infrastructure costs. That's what makes them
+            valuable. Not polished demos, but honest tools.
+          </p>
+          <p>
+            The
+            <strong style="color: var(--text)">makeboldspark.com</strong> domain
+            consolidates a growing portfolio of apps that were previously
+            scattered across hosting providers. Make Bold Solutions provides the
+            strategic and technical leadership to keep it all running.
+          </p>
+        </div>
+      </div>
     </div>
-    <div class="mission-text">
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="footer-logo">Make<span>Bold</span>Spark</div>
       <p>
-        MakeBoldSpark is the shared infrastructure and portfolio home for projects by Mark Hazleton —
-        a Technical Solutions Architect with thirty years of experience turning real-world problems
-        into production software.
+        Where ideas ignite — built and maintained by
+        <a href="https://markhazleton.com">Mark Hazleton</a>
       </p>
-      <p>
-        Every project here is tested under real constraints: real traffic, real data, real infrastructure
-        costs. That's what makes them valuable. Not polished demos, but honest tools.
+      <ul class="footer-links">
+        <li>
+          <a href="https://markhazleton.com" target="_blank" rel="noopener"
+            >Mark Hazleton</a
+          >
+        </li>
+        <li>
+          <a href="https://makeboldsolutions.com" target="_blank" rel="noopener"
+            >Make Bold Solutions</a
+          >
+        </li>
+        <li>
+          <a
+            href="https://github.com/MarkHazleton/ApiSpark"
+            target="_blank"
+            rel="noopener"
+            >GitHub</a
+          >
+        </li>
+        <li>
+          <a href="/scalar/v1" data-api-docs-link style="display: none"
+            >API Docs</a
+          >
+        </li>
+        <li><a href="/api/health">Health</a></li>
+      </ul>
+      <p style="margin-top: 1.5rem; font-size: 0.75rem; opacity: 0.5">
+        © 2025 Make Bold Solutions · makeboldspark.com
       </p>
-      <p>
-        The <strong style="color:var(--text)">makeboldspark.com</strong> domain consolidates a
-        growing portfolio of apps that were previously scattered across hosting providers.
-        Make Bold Solutions provides the strategic and technical leadership to keep it all running.
-      </p>
-    </div>
-  </div>
-</div>
+    </footer>
 
-<!-- FOOTER -->
-<footer>
-  <div class="footer-logo">Make<span>Bold</span>Spark</div>
-  <p>Where ideas ignite — built and maintained by <a href="https://markhazleton.com">Mark Hazleton</a></p>
-  <ul class="footer-links">
-    <li><a href="https://markhazleton.com" target="_blank" rel="noopener">Mark Hazleton</a></li>
-    <li><a href="https://makeboldsolutions.com" target="_blank" rel="noopener">Make Bold Solutions</a></li>
-    <li><a href="https://github.com/MarkHazleton/ApiSpark" target="_blank" rel="noopener">GitHub</a></li>
-    <li><a href="/scalar/v1">API Docs</a></li>
-    <li><a href="/api/health">Health</a></li>
-  </ul>
-  <p style="margin-top:1.5rem; font-size:0.75rem; opacity:0.5;">© 2025 Make Bold Solutions · makeboldspark.com</p>
-</footer>
+    <script>
+      const TAG_CLASSES = {
+        azure: { cls: "tag-azure", label: "Azure" },
+        github: { cls: "tag-github", label: "GitHub Pages" },
+        static: { cls: "tag-static", label: "Static Web App" },
+      };
 
-<script>
-  const TAG_CLASSES = {
-    azure:  { cls: 'tag-azure',  label: 'Azure' },
-    github: { cls: 'tag-github', label: 'GitHub Pages' },
-    static: { cls: 'tag-static', label: 'Static Web App' }
-  };
+      async function loadProjects() {
+        const grid = document.getElementById("projects-grid");
+        const countEl = document.querySelector(".stat-value");
 
-  async function loadProjects() {
-    const grid = document.getElementById('projects-grid');
-    const countEl = document.querySelector('.stat-value');
+        try {
+          const res = await fetch("/subsites.json");
+          if (!res.ok) throw new Error("Failed to load subsites.json");
+          const data = await res.json();
+          const sites = data.subsites.filter((s) => s.active !== false);
 
-    try {
-      const res = await fetch('/subsites.json');
-      if (!res.ok) throw new Error('Failed to load subsites.json');
-      const data = await res.json();
-      const sites = data.subsites.filter(s => s.active !== false);
+          if (countEl) countEl.textContent = sites.length;
 
-      if (countEl) countEl.textContent = sites.length;
-
-      grid.innerHTML = sites.map(s => {
-        const tag = TAG_CLASSES[s.hostType] || { cls: 'tag-azure', label: s.hostType };
-        return `
+          grid.innerHTML = sites
+            .map((s) => {
+              const tag = TAG_CLASSES[s.hostType] || {
+                cls: "tag-azure",
+                label: s.hostType,
+              };
+              return `
           <a class="project-card" href="${s.url}" target="_blank" rel="noopener">
             <div class="project-icon">${s.icon}</div>
             <div class="project-name">${s.name}</div>
@@ -747,16 +1001,38 @@
             <div class="project-desc">${s.description}</div>
             <span class="project-tag ${tag.cls}">${s.tag || tag.label}</span>
           </a>`;
-      }).join('');
-    } catch (err) {
-      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--muted)">
+            })
+            .join("");
+        } catch (err) {
+          grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--muted)">
         Could not load projects. <a href="/subsites.json" style="color:var(--cyan)">View subsites.json</a>
       </div>`;
-      console.error('Project load error:', err);
-    }
-  }
+          console.error("Project load error:", err);
+        }
+      }
 
-  loadProjects();
-</script>
-</body>
+      async function updateApiDocsLinks() {
+        const links = document.querySelectorAll("[data-api-docs-link]");
+
+        try {
+          const response = await fetch("/openapi/v1.json", {
+            cache: "no-store",
+            headers: { Accept: "application/json" },
+          });
+
+          const isApiDocsEnabled = response.ok;
+          links.forEach((link) => {
+            link.style.display = isApiDocsEnabled ? "" : "none";
+          });
+        } catch {
+          links.forEach((link) => {
+            link.style.display = "none";
+          });
+        }
+      }
+
+      updateApiDocsLinks();
+      loadProjects();
+    </script>
+  </body>
 </html>
